@@ -29,4 +29,18 @@ class StoreCategoryRequest extends FormRequest
             'status' => 'nullable|boolean',
         ];
     }
+    public function messages(): array
+    {
+        return [
+            'name_en.required' => __('category.name_en_required'),
+            'name_ar.required' => __('category.name_ar_required'),
+
+            'name_en.unique' => __('category.name_en_unique'),
+            'name_ar.unique' => __('category.name_ar_unique'),
+
+            'image.image' => __('category.image_image'),
+            'image.mimes' => __('category.image_mimes'),
+            'image.max' => __('category.image_max'),
+        ];
+    }
 }

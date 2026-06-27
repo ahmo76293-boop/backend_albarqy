@@ -41,7 +41,10 @@ class CategoryController extends Controller
             'status' => $request->boolean('status', true),
         ]);
 
-        return new CategoryResource($category);
+        return response()->json([
+            'message' => __('category.created'),
+            'data' => new CategoryResource($category),
+        ], 201);
     }
 
     public function show(Category $category)
@@ -75,7 +78,10 @@ class CategoryController extends Controller
 
         $category->save();
 
-        return new CategoryResource($category);
+        return response()->json([
+            'message' => __('category.updated'),
+            'data' => new CategoryResource($category->fresh()),
+        ]);
     }
 
     public function destroy(Category $category)
@@ -87,7 +93,7 @@ class CategoryController extends Controller
         $category->delete();
 
         return response()->json([
-            'message' => 'Category deleted successfully.'
+            'message' => __('category.deleted'),
         ]);
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use Resend;
 
 class AuthController extends Controller
 {
@@ -67,6 +68,15 @@ class AuthController extends Controller
 
         // send email
         Mail::to($user->email)->send(new VerifyEmailMail($url));
+
+        // $resend = Resend::client('re_cNH1SpHd_LL6XCfZN5167H77ZXeeZUWAF');
+
+        // $resend->emails->send([
+        //     'from' => 'onboarding@resend.dev',
+        //     'to' => 'ahmo76293@gmail.com',
+        //     'subject' => 'Hello World',
+        //     'html' => '<p>Congrats on sending your <strong>first email</strong>!</p>'
+        // ]);
 
         return response()->json([
             'message' => 'User successfully registered',

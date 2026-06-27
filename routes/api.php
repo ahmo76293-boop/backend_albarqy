@@ -1,16 +1,21 @@
 <?php
 
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\UnitController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
-Route::group(['middleware' => 'api'], function () {
+Route::group(['middleware' => ['api', 'locale']], function () {
     // Public
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
 
     // public catigories
     Route::apiResource('categories', CategoryController::class)
+        ->only(['index', 'show']);
+
+    // public units
+    Route::apiResource('units', UnitController::class)
         ->only(['index', 'show']);
 
     // Protected
@@ -22,6 +27,9 @@ Route::group(['middleware' => 'api'], function () {
         // Admin only
         Route::middleware('role:admin')->group(function () {
             Route::apiResource('categories', CategoryController::class)
+                ->only(['store', 'update', 'destroy']);
+
+            Route::apiResource('units', UnitController::class)
                 ->only(['store', 'update', 'destroy']);
         });
 
