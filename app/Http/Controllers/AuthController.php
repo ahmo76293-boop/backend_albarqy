@@ -57,17 +57,21 @@ class AuthController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+
+            //should remove 
+            'email_verified_at' => now(),
+            'is_active' => true,
         ]);
 
         // create verification link
-        $url = URL::temporarySignedRoute(
-            'verify.email',
-            now()->addMinutes(60),
-            ['id' => $user->id]
-        );
+        // $url = URL::temporarySignedRoute(
+        //     'verify.email',
+        //     now()->addMinutes(60),
+        //     ['id' => $user->id]
+        // );
 
         // send email
-        Mail::to($user->email)->send(new VerifyEmailMail($url));
+        // Mail::to($user->email)->send(new VerifyEmailMail($url));
 
         // $resend = Resend::client('re_cNH1SpHd_LL6XCfZN5167H77ZXeeZUWAF');
 
