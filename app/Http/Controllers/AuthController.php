@@ -58,7 +58,7 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
 
-            //should remove 
+            //TODO:should remove 
             'email_verified_at' => now(),
             'is_active' => true,
         ]);
