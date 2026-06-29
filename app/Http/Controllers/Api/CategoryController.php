@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Category;
-use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CategoryResource;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
+use App\Http\Resources\CategoryResource;
+use App\Jobs\CompressCategoryImage;
+use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\Laravel\Facades\Image;
 
 class CategoryController extends Controller
 {
@@ -24,7 +27,9 @@ class CategoryController extends Controller
         $image = null;
 
         if ($request->hasFile('image')) {
-            $image = $request->file('image')->store('categories', 'public');
+
+            $image = $request->file('image')
+                ->store('categories', 'public');
         }
 
         $category = Category::create([
@@ -40,6 +45,10 @@ class CategoryController extends Controller
 
             'status' => $request->boolean('status', true),
         ]);
+
+        if ($image) {
+            CompressCategoryImage::dispatch($image);
+        }
 
         return response()->json([
             'message' => __('category.created'),
