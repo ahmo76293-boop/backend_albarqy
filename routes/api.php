@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\UnitController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -18,6 +19,10 @@ Route::group(['middleware' => ['api', 'locale']], function () {
     Route::apiResource('units', UnitController::class)
         ->only(['index', 'show']);
 
+    // public products
+    Route::apiResource('products', ProductController::class)
+        ->only(['index', 'show']);
+
     // Protected
     Route::group(['middleware' => 'auth:api'], function () {
         Route::post('logout', [AuthController::class, 'logout']);
@@ -30,6 +35,9 @@ Route::group(['middleware' => ['api', 'locale']], function () {
                 ->only(['store', 'update', 'destroy']);
 
             Route::apiResource('units', UnitController::class)
+                ->only(['store', 'update', 'destroy']);
+
+            Route::apiResource('products', ProductController::class)
                 ->only(['store', 'update', 'destroy']);
         });
 

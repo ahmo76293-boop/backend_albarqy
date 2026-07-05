@@ -36,6 +36,9 @@ class StoreUnitRequest extends FormRequest
         return [
             'name_en.required' => __('unit.name_en_required'),
             'name_ar.required' => __('unit.name_ar_required'),
+
+            'name_en.unique' => __('unit.name_en_unique'),
+            'name_ar.unique' => __('unit.name_ar_unique'),
         ];
     }
 }

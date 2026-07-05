@@ -12,4 +12,11 @@ class Unit extends Model
         'symbol',
         'status',
     ];
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class)
+            ->withPivot('quantity')
+            ->withTimestamps();
+    }
 }

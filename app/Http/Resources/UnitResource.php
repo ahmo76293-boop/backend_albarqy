@@ -14,14 +14,11 @@ class UnitResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $lang = $request->header('Accept-Language', 'en');
-
         return [
             'id' => $this->id,
 
-            'name' => $lang == 'ar'
-                ? $this->name_ar
-                : $this->name_en,
+            'name_en' => $this->name_en,
+            'name_ar' => $this->name_ar,
 
             'symbol' => $this->symbol,
 
