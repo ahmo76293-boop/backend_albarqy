@@ -75,7 +75,8 @@ class ProductController extends Controller
             foreach ($request->units as $unit) {
 
                 $units[$unit['unit_id']] = [
-                    'quantity' => $unit['quantity']
+                    'quantity' => $unit['quantity'],
+                    'price' => $unit['price'],
                 ];
             }
 
@@ -167,7 +168,8 @@ class ProductController extends Controller
             foreach ($request->units as $unit) {
 
                 $units[$unit['unit_id']] = [
-                    'quantity' => $unit['quantity']
+                    'quantity' => $unit['quantity'],
+                    'price' => $unit['price'],
                 ];
             }
 

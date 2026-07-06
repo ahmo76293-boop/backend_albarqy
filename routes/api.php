@@ -39,6 +39,9 @@ Route::group(['middleware' => ['api', 'locale']], function () {
 
             Route::apiResource('products', ProductController::class)
                 ->only(['store', 'update', 'destroy']);
+
+            Route::apiResource('users', AuthController::class)
+                ->only(['index']);
         });
 
         // Customer only

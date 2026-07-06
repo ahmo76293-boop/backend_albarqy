@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Mail\VerifyEmailMail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +14,12 @@ use Resend;
 
 class AuthController extends Controller
 {
+    public function index()
+    {
+        $users = User::latest()->paginate(10);
+
+        return UserResource::collection($users);
+    }
     /**
      * Get a JWT via given credentials.
      *
@@ -36,7 +43,10 @@ class AuthController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        return $this->respondWithToken($token);
+        return response()->json([
+            'token' => $this->respondWithToken($token),
+            'user' => $user,
+        ], 201);
     }
 
     /**

@@ -18,7 +18,7 @@ class RoleMiddleware
         if (! in_array(auth()->user()->role, $roles)) {
             return response()->json([
                 'message' => 'Unauthorized'
-            ], 403);
+            ], 401);
         }
 
         return $next($request);

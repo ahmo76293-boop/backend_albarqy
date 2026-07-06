@@ -24,6 +24,8 @@ return new class extends Migration
 
             $table->unsignedInteger('quantity');
 
+            $table->decimal('price');
+
             $table->timestamps();
 
             $table->unique([

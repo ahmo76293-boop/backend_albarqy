@@ -43,6 +43,7 @@ class ProductResource extends JsonResource
                         'name_ar' => $unit->name_ar,
 
                         'quantity' => $unit->pivot->quantity,
+                        'price' => $unit->pivot->price,
                     ];
                 });
             }),
