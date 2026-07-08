@@ -67,4 +67,8 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     {
         return $this->role === 'customer_service';
     }
+    public function locations()
+    {
+        return $this->hasMany(Location::class);
+    }
 }

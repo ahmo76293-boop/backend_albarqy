@@ -14,12 +14,6 @@ use Resend;
 
 class AuthController extends Controller
 {
-    public function index()
-    {
-        $users = User::latest()->paginate(10);
-
-        return UserResource::collection($users);
-    }
     /**
      * Get a JWT via given credentials.
      *

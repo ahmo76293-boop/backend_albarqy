@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\AdminLocationController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\UnitController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
@@ -40,12 +43,15 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::apiResource('products', ProductController::class)
                 ->only(['store', 'update', 'destroy']);
 
-            Route::apiResource('users', AuthController::class)
-                ->only(['index']);
+            Route::apiResource('users', UserController::class);
+
+            Route::apiResource('locations-admin', AdminLocationController::class);
         });
 
         // Customer only
-        Route::middleware('role:customer')->group(function () {});
+        Route::middleware('role:customer')->group(function () {
+            Route::apiResource('locations', LocationController::class);
+        });
 
         // Admin + Customer Service
         Route::middleware('role:admin,customer_service')->group(function () {});
