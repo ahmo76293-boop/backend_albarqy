@@ -22,6 +22,7 @@ class LocationResource extends JsonResource
             'longitude' => $this->longitude,
             'is_default' => $this->is_default,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'user' => new UserResource($this->whenLoaded('user')),
         ];
     }
 }
