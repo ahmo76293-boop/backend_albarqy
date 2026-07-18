@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Http\Requests\Order;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateOrderRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Validation rules.
+     */
+    public function rules(): array
+    {
+        return [
+
+            'location_id' => 'required|exists:locations,id',
+
+            'payment_method' => 'required|in:cash,card',
+
+            'payment_status' => 'required|in:pending,paid,failed',
+
+            'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
+
+            'delivery_fee' => 'nullable|numeric|min:0',
+
+            'discount' => 'nullable|numeric|min:0',
+
+            'notes' => 'nullable|string|max:1000',
+
+            // Optional: allow updating items
+            'items' => 'nullable|array|min:1',
+
+            'items.*.product_id' => 'required_with:items|exists:products,id',
+
+            'items.*.unit_id' => 'required_with:items|exists:units,id',
+
+            'items.*.quantity' => 'required_with:items|integer|min:1',
+        ];
+    }
+
+    /**
+     * Validation messages.
+     */
+    public function messages(): array
+    {
+        return [
+
+            'location_id.required' => __('order.location_required'),
+            'location_id.exists' => __('order.location_exists'),
+
+            'payment_method.required' => __('order.payment_method_required'),
+            'payment_method.in' => __('order.payment_method_invalid'),
+
+            'payment_status.required' => __('order.payment_status_required'),
+            'payment_status.in' => __('order.payment_status_invalid'),
+
+            'status.required' => __('order.status_required'),
+            'status.in' => __('order.status_invalid'),
+
+            'delivery_fee.numeric' => __('order.delivery_fee_numeric'),
+            'delivery_fee.min' => __('order.delivery_fee_min'),
+
+            'discount.numeric' => __('order.discount_numeric'),
+            'discount.min' => __('order.discount_min'),
+
+            'notes.max' => __('order.notes_max'),
+
+            'items.array' => __('order.items_array'),
+            'items.min' => __('order.items_min'),
+
+            'items.*.product_id.required_with' => __('order.product_required'),
+            'items.*.product_id.exists' => __('order.product_exists'),
+
+            'items.*.unit_id.required_with' => __('order.unit_required'),
+            'items.*.unit_id.exists' => __('order.unit_exists'),
+
+            'items.*.quantity.required_with' => __('order.quantity_required'),
+            'items.*.quantity.integer' => __('order.quantity_integer'),
+            'items.*.quantity.min' => __('order.quantity_min'),
+        ];
+    }
+}

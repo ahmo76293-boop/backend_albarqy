@@ -19,4 +19,9 @@ class Unit extends Model
             ->withPivot('quantity')
             ->withTimestamps();
     }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }
