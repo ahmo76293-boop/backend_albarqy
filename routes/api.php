@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\AdminLocationController;
+use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
@@ -33,7 +35,7 @@ Route::group(['middleware' => ['api', 'locale']], function () {
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::post('me', [AuthController::class, 'me']);
 
-        Route::apiResource('orders', OrderController::class);
+        Route::apiResource('orders', OrderController::class)->only('store');
 
         // Admin only
         Route::middleware('role:admin')->group(function () {
@@ -49,11 +51,29 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::apiResource('users', UserController::class);
 
             Route::apiResource('locations-admin', AdminLocationController::class);
+
+            Route::apiResource('orders', OrderController::class)->only('index', 'show', 'update', 'destroy');
         });
 
         // Customer only
         Route::middleware('role:customer')->group(function () {
             Route::apiResource('locations', LocationController::class);
+
+            Route::get('/cart', [CartController::class, 'index']);
+
+            Route::post('/cart', [CartController::class, 'store']);
+
+            Route::put('/cart/{cartItem}', [CartController::class, 'update']);
+
+            Route::delete('/cart/{cartItem}', [CartController::class, 'destroy']);
+
+            Route::delete('/cart', [CartController::class, 'clear']);
+
+            Route::get('favorites', [FavoriteController::class, 'index']);
+
+            Route::post('favorites', [FavoriteController::class, 'store']);
+
+            Route::delete('favorites/{favorite}', [FavoriteController::class, 'destroy']);
         });
 
         // Admin + Customer Service
