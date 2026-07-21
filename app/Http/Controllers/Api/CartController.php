@@ -9,23 +9,36 @@ use App\Http\Resources\CartResource;
 use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
     /**
      * Display the authenticated user's cart.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $cart = CartItem::with([
-            'product.category',
-            'product.images',
-            'product.productUnits',
-            'unit'
-        ])
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->paginate(10);
+        if ($request->boolean('paginate', true)) {
+            $cart = CartItem::with([
+                'product.category',
+                'product.images',
+                'product.productUnits',
+                'unit'
+            ])
+                ->where('user_id', auth()->id())
+                ->latest()
+                ->paginate(10);
+        } else {
+            $cart = CartItem::with([
+                'product.category',
+                'product.images',
+                'product.productUnits',
+                'unit'
+            ])
+                ->where('user_id', auth()->id())
+                ->latest()
+                ->get();
+        }
 
         return CartResource::collection($cart);
     }

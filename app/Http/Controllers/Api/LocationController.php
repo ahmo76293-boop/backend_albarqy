@@ -8,18 +8,26 @@ use App\Http\Requests\Location\UpdateLocationRequest;
 use App\Http\Resources\LocationResource;
 use App\Models\Location;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class LocationController extends Controller
 {
     /**
      * Display all locations for the authenticated user.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $locations = auth()->user()
-            ->locations()
-            ->latest()
-            ->paginate(10);
+        if ($request->boolean('paginate', true)) {
+            $locations = auth()->user()
+                ->locations()
+                ->latest()
+                ->paginate(10);
+        } else {
+            $locations = auth()->user()
+                ->locations()
+                ->latest()
+                ->get();
+        }
 
         return LocationResource::collection($locations);
     }

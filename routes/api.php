@@ -36,7 +36,7 @@ Route::group(['middleware' => ['api', 'locale']], function () {
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::post('me', [AuthController::class, 'me']);
 
-        Route::apiResource('orders', OrderController::class)->only('store');
+
 
         // Admin only
         Route::middleware('role:admin')->group(function () {
@@ -54,12 +54,16 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::apiResource('locations-admin', AdminLocationController::class);
 
             Route::apiResource('orders', OrderController::class)->only('index', 'show', 'update', 'destroy');
+            Route::post('orders/admin-store', [OrderController::class, 'adminStore']);
 
             Route::apiResource('offers', OfferController::class);
         });
 
         // Customer only
         Route::middleware('role:customer')->group(function () {
+            Route::apiResource('orders', OrderController::class)->only('store');
+            Route::get('my-orders', [OrderController::class, 'myOrders']);
+
             Route::apiResource('locations', LocationController::class);
 
             Route::get('/cart', [CartController::class, 'index']);

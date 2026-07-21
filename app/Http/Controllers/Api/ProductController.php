@@ -9,22 +9,30 @@ use App\Http\Resources\ProductResource;
 use App\Jobs\CompressProductImage;
 use App\Models\Product;
 use App\Models\ProductImage;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with([
-            'category',
-            'images',
-            'units'
-        ])->latest()->paginate(10);
+        if ($request->boolean('paginate', true)) {
+            $products = Product::with([
+                'category',
+                'images',
+                'units'
+            ])->latest()->paginate(10);
+        } else {
+            $products = Product::with([
+                'category',
+                'images',
+                'units'
+            ])->latest()->get();
+        }
 
         return ProductResource::collection($products);
     }

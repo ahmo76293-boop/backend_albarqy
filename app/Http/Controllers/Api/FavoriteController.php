@@ -7,22 +7,34 @@ use App\Http\Requests\Favorite\StoreFavoriteRequest;
 use App\Http\Resources\FavoriteResource;
 use App\Models\Favorite;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class FavoriteController extends Controller
 {
     /**
      * Display all favorite products for the authenticated user.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $favorites = Favorite::with([
-            'product.category',
-            'product.images',
-            'product.units',
-        ])
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->paginate(10);
+        if ($request->boolean('paginate', true)) {
+            $favorites = Favorite::with([
+                'product.category',
+                'product.images',
+                'product.units',
+            ])
+                ->where('user_id', auth()->id())
+                ->latest()
+                ->paginate(10);
+        } else {
+            $favorites = Favorite::with([
+                'product.category',
+                'product.images',
+                'product.units',
+            ])
+                ->where('user_id', auth()->id())
+                ->latest()
+                ->get();
+        }
 
         return FavoriteResource::collection($favorites);
     }

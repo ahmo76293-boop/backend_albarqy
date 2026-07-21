@@ -9,18 +9,26 @@ use App\Http\Resources\OfferResource;
 use App\Models\Offer;
 use App\Models\ProductUnit;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class OfferController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $offers = Offer::with([
-            'productUnit.product',
-            'productUnit.unit',
-        ])->latest()->paginate(10);
+        if ($request->boolean('paginate', true)) {
+            $offers = Offer::with([
+                'productUnit.product',
+                'productUnit.unit',
+            ])->latest()->paginate(10);
+        } else {
+            $offers = Offer::with([
+                'productUnit.product',
+                'productUnit.unit',
+            ])->latest()->get();
+        }
 
         return OfferResource::collection($offers);
     }

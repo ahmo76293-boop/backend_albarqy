@@ -6,17 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of users.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::latest()->paginate(10);
+        if ($request->boolean('paginate', true)) {
+            $users = User::latest()->paginate(10);
+        } else {
+            $users = User::latest()->get();
+        }
 
         return UserResource::collection($users);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Order\StoreAdminOrderRequest;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Http\Requests\Order\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
@@ -10,24 +11,57 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductUnit;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
     /**
      * Display a listing of orders.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with([
-            'user',
-            'location',
-            'items.product',
-            'items.unit'
-        ])
-            ->latest()
-            ->paginate(10);
+        if ($request->boolean('paginate', true)) {
+            $orders = Order::with([
+                'user',
+                'location',
+                'items.product',
+                'items.unit'
+            ])
+                ->latest()
+                ->paginate(10);
+        } else {
+            $orders = Order::with([
+                'user',
+                'location',
+                'items.product',
+                'items.unit'
+            ])
+                ->latest()
+                ->get();
+        }
 
         return OrderResource::collection($orders);
+    }
+
+    public function myOrders(Request $request)
+    {
+        $query = Order::with([
+            'location',
+            'items.product',
+            'items.unit',
+        ])
+            ->where('user_id', auth()->id())
+            ->latest();
+
+        if ($request->boolean('paginate', true)) {
+            return OrderResource::collection(
+                $query->paginate($request->integer('per_page', 10))
+            );
+        }
+
+        return OrderResource::collection(
+            $query->get()
+        );
     }
 
     /**
@@ -207,5 +241,95 @@ class OrderController extends Controller
         return response()->json([
             'message' => __('order.deleted')
         ]);
+    }
+
+    public function adminStore(StoreAdminOrderRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $subtotal = 0;
+
+            $order = Order::create([
+                'user_id' => $request->user_id,
+
+                'location_id' => $request->location_id,
+
+                'order_number' => 'ORD-' . time(),
+
+                'subtotal' => 0,
+
+                'delivery_fee' => $request->delivery_fee ?? 0,
+
+                'discount' => $request->discount ?? 0,
+
+                'total' => 0,
+
+                'payment_method' => $request->payment_method,
+
+                'payment_status' => 'pending',
+
+                'status' => 'pending',
+
+                'notes' => $request->notes,
+            ]);
+
+            foreach ($request->items as $item) {
+
+                // Get the selected unit for this product
+                $productUnit = ProductUnit::where('product_id', $item['product_id'])
+                    ->where('unit_id', $item['unit_id'])
+                    ->first();
+
+                if (!$productUnit) {
+                    throw new \Exception('The selected unit does not belong to this product.');
+                }
+
+                $priceData = $productUnit->getFinalPrice();
+
+                $price = $priceData['final_price'];
+
+                $total = $price * $item['quantity'];
+
+                $subtotal += $total;
+
+                OrderItem::create([
+                    'order_id'   => $order->id,
+                    'product_id' => $productUnit->product_id,
+                    'unit_id'    => $productUnit->unit_id,
+                    'quantity'   => $item['quantity'],
+                    'price'      => $price,
+                    'total'      => $total,
+                ]);
+            }
+
+            $order->update([
+                'subtotal' => $subtotal,
+                'total' => $subtotal + $order->delivery_fee - $order->discount,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => __('order.created'),
+                'data' => new OrderResource(
+                    $order->load(
+                        'user',
+                        'location',
+                        'items.product',
+                        'items.unit'
+                    )
+                ),
+            ], 201);
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'message' => __('order.create_failed'),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

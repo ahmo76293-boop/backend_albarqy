@@ -10,14 +10,17 @@ use App\Jobs\CompressCategoryImage;
 use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Encoders\JpegEncoder;
-use Intervention\Image\Laravel\Facades\Image;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::latest()->paginate(10);
+        if ($request->boolean('paginate', true)) {
+            $categories = Category::latest()->paginate(10);
+        } else {
+            $categories = Category::latest()->get();
+        }
 
         return CategoryResource::collection($categories);
     }

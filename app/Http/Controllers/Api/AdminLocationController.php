@@ -8,17 +8,24 @@ use App\Http\Requests\Location\UpdateLocationRequest;
 use App\Http\Resources\LocationResource;
 use App\Models\Location;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class AdminLocationController extends Controller
 {
     /**
      * Display all locations.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $locations = Location::with('user')
-            ->latest()
-            ->paginate(10);
+        if ($request->boolean('paginate', true)) {
+            $locations = Location::with('user')
+                ->latest()
+                ->paginate(10);
+        } else {
+            $locations = Location::with('user')
+                ->latest()
+                ->get();
+        }
 
         return LocationResource::collection($locations);
     }

@@ -7,14 +7,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Unit\StoreUnitRequest;
 use App\Http\Requests\Unit\UpdateUnitRequest;
 use App\Http\Resources\UnitResource;
+use Illuminate\Http\Request;
 
 class UnitController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return UnitResource::collection(
-            Unit::latest()->paginate(10)
-        );
+        if ($request->boolean('paginate', true)) {
+            return UnitResource::collection(
+                Unit::latest()->paginate(10)
+            );
+        } else {
+            return UnitResource::collection(
+                Unit::latest()->get()
+            );
+        }
     }
 
     public function store(StoreUnitRequest $request)
