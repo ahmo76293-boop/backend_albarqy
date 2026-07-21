@@ -26,5 +26,14 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
             'is_active' => 1,
         ]);
+
+        $this->call([
+            CategorySeeder::class,
+            UnitSeeder::class,
+            ProductSeeder::class,
+            ProductUnitSeeder::class,
+            // OrderSeeder::class,
+            // OrderItemSeeder::class,
+        ]);
     }
 }

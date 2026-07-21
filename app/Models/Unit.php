@@ -24,4 +24,9 @@ class Unit extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    public function productUnits()
+    {
+        return $this->hasMany(ProductUnit::class);
+    }
 }

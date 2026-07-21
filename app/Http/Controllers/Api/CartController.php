@@ -20,6 +20,7 @@ class CartController extends Controller
         $cart = CartItem::with([
             'product.category',
             'product.images',
+            'product.productUnits',
             'unit'
         ])
             ->where('user_id', auth()->id())
@@ -77,6 +78,7 @@ class CartController extends Controller
                     $cartItem->load(
                         'product.category',
                         'product.images',
+                        'product.productUnits',
                         'unit'
                     )
                 ),
@@ -100,6 +102,7 @@ class CartController extends Controller
         $cartItem = CartItem::with([
             'product.category',
             'product.images',
+            'product.productUnits',
             'unit'
         ])
             ->where('user_id', auth()->id())
@@ -132,6 +135,7 @@ class CartController extends Controller
                     $cartItem->fresh()->load(
                         'product.category',
                         'product.images',
+                        'product.productUnits',
                         'unit'
                     )
                 ),

@@ -8,7 +8,7 @@ use App\Http\Requests\Order\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Product;
+use App\Models\ProductUnit;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
@@ -67,18 +67,18 @@ class OrderController extends Controller
 
             foreach ($request->items as $item) {
 
-                $product = Product::findOrFail($item['product_id']);
-
                 // Get the selected unit for this product
-                $unit = $product->units()
+                $productUnit = ProductUnit::where('product_id', $item['product_id'])
                     ->where('unit_id', $item['unit_id'])
                     ->first();
 
-                if (!$unit) {
+                if (!$productUnit) {
                     throw new \Exception('The selected unit does not belong to this product.');
                 }
 
-                $price = $unit->pivot->price;
+                $priceData = $productUnit->getFinalPrice();
+
+                $price = $priceData['final_price'];
 
                 $total = $price * $item['quantity'];
 
@@ -86,8 +86,8 @@ class OrderController extends Controller
 
                 OrderItem::create([
                     'order_id'   => $order->id,
-                    'product_id' => $product->id,
-                    'unit_id'    => $unit->id,
+                    'product_id' => $productUnit->product_id,
+                    'unit_id'    => $productUnit->unit_id,
                     'quantity'   => $item['quantity'],
                     'price'      => $price,
                     'total'      => $total,

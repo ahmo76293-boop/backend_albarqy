@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\OfferController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\UnitController;
@@ -53,6 +54,8 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::apiResource('locations-admin', AdminLocationController::class);
 
             Route::apiResource('orders', OrderController::class)->only('index', 'show', 'update', 'destroy');
+
+            Route::apiResource('offers', OfferController::class);
         });
 
         // Customer only
