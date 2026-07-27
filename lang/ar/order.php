@@ -49,4 +49,9 @@ return [
     'create_failed' => 'فشل في إنشاء الطلب.',
     'update_failed' => 'فشل في تحديث الطلب.',
     'delete_failed' => 'فشل في حذف الطلب.',
+
+    'status_updated' => 'تم تحديث حالة الطلب بنجاح.',
+
+    'status_required' => 'حقل حالة الطلب مطلوب.',
+    'status_invalid' => 'حالة الطلب المحددة غير صالحة.',
 ];

@@ -49,4 +49,9 @@ return [
     'create_failed' => 'Failed to create order.',
     'update_failed' => 'Failed to update order.',
     'delete_failed' => 'Failed to delete order.',
+
+    'status_updated' => 'Order status updated successfully.',
+
+    'status_required' => 'The order status field is required.',
+    'status_invalid' => 'The selected order status is invalid.',
 ];

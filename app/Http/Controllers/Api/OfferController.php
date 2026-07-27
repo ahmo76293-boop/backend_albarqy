@@ -18,16 +18,41 @@ class OfferController extends Controller
      */
     public function index(Request $request)
     {
+        $query = Offer::with([
+            'productUnit.product',
+            'productUnit.unit',
+        ]);
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status);
+        }
+
+        // Filter by offer type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('product_id')) {
+            $query->whereHas('productUnit', function ($q) use ($request) {
+                $q->where('product_id', $request->product_id);
+            });
+        }
+
+        if ($request->filled('unit_id')) {
+            $query->whereHas('productUnit', function ($q) use ($request) {
+                $q->where('unit_id', $request->unit_id);
+            });
+        }
+
+        $query->latest();
+
         if ($request->boolean('paginate', true)) {
-            $offers = Offer::with([
-                'productUnit.product',
-                'productUnit.unit',
-            ])->latest()->paginate(10);
+            $offers = $query->paginate(
+                $request->integer('per_page', 10)
+            );
         } else {
-            $offers = Offer::with([
-                'productUnit.product',
-                'productUnit.unit',
-            ])->latest()->get();
+            $offers = $query->get();
         }
 
         return OfferResource::collection($offers);

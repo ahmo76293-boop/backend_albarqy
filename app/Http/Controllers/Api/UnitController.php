@@ -13,15 +13,26 @@ class UnitController extends Controller
 {
     public function index(Request $request)
     {
+        $query = Unit::query();
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $query->latest();
+
         if ($request->boolean('paginate', true)) {
             return UnitResource::collection(
-                Unit::latest()->paginate(10)
-            );
-        } else {
-            return UnitResource::collection(
-                Unit::latest()->get()
+                $query->paginate(
+                    $request->integer('per_page', 10)
+                )
             );
         }
+
+        return UnitResource::collection(
+            $query->get()
+        );
     }
 
     public function store(StoreUnitRequest $request)

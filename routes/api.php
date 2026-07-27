@@ -55,6 +55,7 @@ Route::group(['middleware' => ['api', 'locale']], function () {
 
             Route::apiResource('orders', OrderController::class)->only('index', 'show', 'update', 'destroy');
             Route::post('orders/admin-store', [OrderController::class, 'adminStore']);
+            Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
 
             Route::apiResource('offers', OfferController::class);
         });

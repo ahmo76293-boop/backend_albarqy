@@ -16,10 +16,26 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        $query = User::query();
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status);
+        }
+
+        // Filter by role
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        $query->latest();
+
         if ($request->boolean('paginate', true)) {
-            $users = User::latest()->paginate(10);
+            $users = $query->paginate(
+                $request->integer('per_page', 10)
+            );
         } else {
-            $users = User::latest()->get();
+            $users = $query->get();
         }
 
         return UserResource::collection($users);

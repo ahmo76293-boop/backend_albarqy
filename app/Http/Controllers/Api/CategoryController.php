@@ -16,10 +16,21 @@ class CategoryController extends Controller
 {
     public function index(Request $request)
     {
+        $query = Category::query();
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $query->latest();
+
         if ($request->boolean('paginate', true)) {
-            $categories = Category::latest()->paginate(10);
+            $categories = $query->paginate(
+                $request->integer('per_page', 10)
+            );
         } else {
-            $categories = Category::latest()->get();
+            $categories = $query->get();
         }
 
         return CategoryResource::collection($categories);

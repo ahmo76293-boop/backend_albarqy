@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\StoreAdminOrderRequest;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Http\Requests\Order\UpdateOrderRequest;
+use App\Http\Requests\Order\UpdateOrderStatusRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -20,24 +21,36 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        $query = Order::with([
+            'user',
+            'location',
+            'items.product',
+            'items.unit',
+        ]);
+
+        // Filter by order status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by payment status
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->payment_status);
+        }
+
+        // Filter by user
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        $query->latest();
+
         if ($request->boolean('paginate', true)) {
-            $orders = Order::with([
-                'user',
-                'location',
-                'items.product',
-                'items.unit'
-            ])
-                ->latest()
-                ->paginate(10);
+            $orders = $query->paginate(
+                $request->integer('per_page', 10)
+            );
         } else {
-            $orders = Order::with([
-                'user',
-                'location',
-                'items.product',
-                'items.unit'
-            ])
-                ->latest()
-                ->get();
+            $orders = $query->get();
         }
 
         return OrderResource::collection($orders);
@@ -217,6 +230,42 @@ class OrderController extends Controller
                         'items.unit'
                     )
                 )
+            ]);
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'message' => __('order.update_failed'),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updateStatus(UpdateOrderStatusRequest $request, $id)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $order = Order::findOrFail($id);
+
+            $order->update([
+                'status' => $request->status,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => __('order.status_updated'),
+                'data' => new OrderResource(
+                    $order->fresh()->load(
+                        'user',
+                        'location',
+                        'items.product',
+                        'items.unit'
+                    )
+                ),
             ]);
         } catch (\Throwable $e) {
 
