@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminLocationController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\OfferController;
@@ -29,6 +30,8 @@ Route::group(['middleware' => ['api', 'locale']], function () {
     // public products
     Route::apiResource('products', ProductController::class)
         ->only(['index', 'show']);
+
+    Route::get('categories/{category}/products', [ProductController::class, 'productsByCategory']);
 
     // Protected
     Route::group(['middleware' => 'auth:api'], function () {
@@ -58,6 +61,8 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
 
             Route::apiResource('offers', OfferController::class);
+
+            Route::apiResource('coupons', CouponController::class);
         });
 
         // Customer only
@@ -82,6 +87,8 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::post('favorites', [FavoriteController::class, 'store']);
 
             Route::delete('favorites/{favorite}', [FavoriteController::class, 'destroy']);
+
+            Route::post('coupons/check', [CouponController::class, 'check']);
         });
 
         // Admin + Customer Service

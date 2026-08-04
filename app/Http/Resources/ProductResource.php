@@ -33,19 +33,49 @@ class ProductResource extends JsonResource
                 $this->whenLoaded('images')
             ),
 
-            'units' => $this->whenLoaded('units', function () {
-                return $this->units->map(function ($unit) {
+            // 'units' => $this->whenLoaded('units', function () {
+            //     return $this->units->map(function ($unit) {
 
-                    return [
-                        'id' => $unit->id,
+            //         return [
+            //             'id' => $unit->id,
 
-                        'name_en' => $unit->name_en,
-                        'name_ar' => $unit->name_ar,
+            //             'name_en' => $unit->name_en,
+            //             'name_ar' => $unit->name_ar,
 
-                        'quantity' => $unit->pivot->quantity,
-                        'price' => $unit->pivot->price,
+            //             'quantity' => $unit->pivot->quantity,
+            //             'price' => $unit->pivot->price,
+            //         ];
+            //     });
+            // }),
+
+            'units' => $this->productUnits->map(function ($productUnit) {
+
+                $priceData = $productUnit->getFinalPrice();
+                $offer = $productUnit->activeOffer();
+
+                $data = [
+                    'id' => $productUnit->unit_id,
+                    'name_en' => $productUnit->unit->name_en,
+                    'name_ar' => $productUnit->unit->name_ar,
+                    'quantity' => $productUnit->quantity,
+                    'price' => $productUnit->price,
+                ];
+
+                if ($offer) {
+                    $data['original_price'] = $priceData['original_price'];
+                    $data['discount'] = $priceData['discount'];
+                    $data['final_price'] = $priceData['final_price'];
+
+                    $data['offer'] = [
+                        'id' => $offer->id,
+                        'type' => $offer->type,
+                        'value' => $offer->value,
+                        'start_date' => $offer->start_date,
+                        'end_date' => $offer->end_date,
                     ];
-                });
+                }
+
+                return $data;
             }),
 
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),

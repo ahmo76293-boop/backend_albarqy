@@ -8,6 +8,7 @@ use App\Http\Requests\Order\StoreOrderRequest;
 use App\Http\Requests\Order\UpdateOrderRequest;
 use App\Http\Requests\Order\UpdateOrderStatusRequest;
 use App\Http\Resources\OrderResource;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductUnit;
@@ -88,20 +89,110 @@ class OrderController extends Controller
 
             $subtotal = 0;
 
+            $itemsData = [];
+
+            // Calculate products prices
+            foreach ($request->items as $item) {
+
+                $productUnit = ProductUnit::where('product_id', $item['product_id'])
+                    ->where('unit_id', $item['unit_id'])
+                    ->first();
+
+                if (!$productUnit) {
+                    throw new \Exception('The selected unit does not belong to this product.');
+                }
+
+
+                $priceData = $productUnit->getFinalPrice();
+
+                $price = $priceData['final_price'];
+
+                $total = $price * $item['quantity'];
+
+                $subtotal += $total;
+
+
+                $itemsData[] = [
+                    'product_id' => $productUnit->product_id,
+                    'unit_id' => $productUnit->unit_id,
+                    'quantity' => $item['quantity'],
+                    'price' => $price,
+                    'total' => $total,
+                ];
+            }
+
+
+            // Apply coupon
+            $coupon = null;
+            $couponDiscount = 0;
+
+
+            if ($request->filled('coupon_code')) {
+
+                $coupon = Coupon::where('code', strtoupper($request->coupon_code))
+                    ->where('is_active', true)
+                    ->whereDate('start_date', '<=', now())
+                    ->whereDate('end_date', '>=', now())
+                    ->first();
+
+
+                if (!$coupon) {
+                    throw new \Exception(__('coupon.invalid'));
+                }
+
+
+                if (
+                    $coupon->usage_limit !== null &&
+                    $coupon->used_count >= $coupon->usage_limit
+                ) {
+                    throw new \Exception(__('coupon.limit_reached'));
+                }
+
+
+                if (
+                    $coupon->minimum_order_amount &&
+                    $subtotal < $coupon->minimum_order_amount
+                ) {
+                    throw new \Exception(__('coupon.minimum_order'));
+                }
+
+
+                if ($coupon->type === 'percentage') {
+
+                    $couponDiscount = ($subtotal * $coupon->value) / 100;
+                } else {
+
+                    $couponDiscount = $coupon->value;
+                }
+
+
+                $couponDiscount = min($couponDiscount, $subtotal);
+            }
+
+
+            // Create order
             $order = Order::create([
+
                 'user_id' => auth()->id(),
 
                 'location_id' => $request->location_id,
 
+                'coupon_id' => $coupon?->id,
+
                 'order_number' => 'ORD-' . time(),
 
-                'subtotal' => 0,
+                'subtotal' => $subtotal,
+
+                'coupon_discount' => $couponDiscount,
 
                 'delivery_fee' => $request->delivery_fee ?? 0,
 
                 'discount' => $request->discount ?? 0,
 
-                'total' => 0,
+                'total' => $subtotal
+                    - $couponDiscount
+                    - ($request->discount ?? 0)
+                    + ($request->delivery_fee ?? 0),
 
                 'payment_method' => $request->payment_method,
 
@@ -112,41 +203,29 @@ class OrderController extends Controller
                 'notes' => $request->notes,
             ]);
 
-            foreach ($request->items as $item) {
 
-                // Get the selected unit for this product
-                $productUnit = ProductUnit::where('product_id', $item['product_id'])
-                    ->where('unit_id', $item['unit_id'])
-                    ->first();
-
-                if (!$productUnit) {
-                    throw new \Exception('The selected unit does not belong to this product.');
-                }
-
-                $priceData = $productUnit->getFinalPrice();
-
-                $price = $priceData['final_price'];
-
-                $total = $price * $item['quantity'];
-
-                $subtotal += $total;
+            // Create order items
+            foreach ($itemsData as $item) {
 
                 OrderItem::create([
-                    'order_id'   => $order->id,
-                    'product_id' => $productUnit->product_id,
-                    'unit_id'    => $productUnit->unit_id,
-                    'quantity'   => $item['quantity'],
-                    'price'      => $price,
-                    'total'      => $total,
+                    'order_id' => $order->id,
+                    'product_id' => $item['product_id'],
+                    'unit_id' => $item['unit_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'total' => $item['total'],
                 ]);
             }
 
-            $order->update([
-                'subtotal' => $subtotal,
-                'total' => $subtotal + $order->delivery_fee - $order->discount,
-            ]);
+
+            // Increase coupon usage
+            if ($coupon) {
+                $coupon->increment('used_count');
+            }
+
 
             DB::commit();
+
 
             return response()->json([
                 'message' => __('order.created'),
@@ -154,6 +233,7 @@ class OrderController extends Controller
                     $order->load(
                         'user',
                         'location',
+                        'coupon',
                         'items.product',
                         'items.unit'
                     )
@@ -162,6 +242,7 @@ class OrderController extends Controller
         } catch (\Throwable $e) {
 
             DB::rollBack();
+
 
             return response()->json([
                 'message' => __('order.create_failed'),
@@ -313,6 +394,8 @@ class OrderController extends Controller
 
                 'discount' => $request->discount ?? 0,
 
+                'coupon_discount' => 0,
+
                 'total' => 0,
 
                 'payment_method' => $request->payment_method,
@@ -324,16 +407,18 @@ class OrderController extends Controller
                 'notes' => $request->notes,
             ]);
 
+
             foreach ($request->items as $item) {
 
-                // Get the selected unit for this product
                 $productUnit = ProductUnit::where('product_id', $item['product_id'])
                     ->where('unit_id', $item['unit_id'])
                     ->first();
 
+
                 if (!$productUnit) {
                     throw new \Exception('The selected unit does not belong to this product.');
                 }
+
 
                 $priceData = $productUnit->getFinalPrice();
 
@@ -342,6 +427,7 @@ class OrderController extends Controller
                 $total = $price * $item['quantity'];
 
                 $subtotal += $total;
+
 
                 OrderItem::create([
                     'order_id'   => $order->id,
@@ -353,27 +439,120 @@ class OrderController extends Controller
                 ]);
             }
 
+
+            /*
+        |--------------------------------------------------------------------------
+        | Apply Coupon
+        |--------------------------------------------------------------------------
+        */
+
+            $coupon = null;
+            $couponDiscount = 0;
+
+
+            if ($request->filled('coupon_code')) {
+
+
+                $coupon = Coupon::where(
+                    'code',
+                    strtoupper($request->coupon_code)
+                )
+                    ->where('is_active', true)
+                    ->whereDate('start_date', '<=', now())
+                    ->whereDate('end_date', '>=', now())
+                    ->first();
+
+
+                if (!$coupon) {
+                    throw new \Exception(__('coupon.invalid'));
+                }
+
+
+                if (
+                    $coupon->usage_limit !== null &&
+                    $coupon->used_count >= $coupon->usage_limit
+                ) {
+                    throw new \Exception(__('coupon.limit_reached'));
+                }
+
+
+                if (
+                    $coupon->minimum_order_amount &&
+                    $subtotal < $coupon->minimum_order_amount
+                ) {
+                    throw new \Exception(__('coupon.minimum_order'));
+                }
+
+
+
+                if ($coupon->type === 'percentage') {
+
+                    $couponDiscount = ($subtotal * $coupon->value) / 100;
+                } else {
+
+                    $couponDiscount = $coupon->value;
+                }
+
+
+                // prevent discount bigger than subtotal
+                $couponDiscount = min($couponDiscount, $subtotal);
+            }
+
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | Update Order Totals
+        |--------------------------------------------------------------------------
+        */
+
             $order->update([
+
+                'coupon_id' => $coupon?->id,
+
                 'subtotal' => $subtotal,
-                'total' => $subtotal + $order->delivery_fee - $order->discount,
+
+                'coupon_discount' => $couponDiscount,
+
+
+                'total' =>
+                $subtotal
+                    - $couponDiscount
+                    - $order->discount
+                    + $order->delivery_fee,
+
             ]);
+
+
+
+            if ($coupon) {
+                $coupon->increment('used_count');
+            }
+
+
 
             DB::commit();
 
+
             return response()->json([
                 'message' => __('order.created'),
+
                 'data' => new OrderResource(
-                    $order->load(
+                    $order->fresh()->load(
                         'user',
                         'location',
+                        'coupon',
                         'items.product',
                         'items.unit'
                     )
                 ),
+
             ], 201);
         } catch (\Throwable $e) {
 
+
             DB::rollBack();
+
 
             return response()->json([
                 'message' => __('order.create_failed'),

@@ -41,6 +41,17 @@ class OrderResource extends JsonResource
 
             'payment_status' => $this->payment_status,
 
+            'coupon' => $this->whenLoaded('coupon', function () {
+                return [
+                    'id' => $this->coupon->id,
+                    'code' => $this->coupon->code,
+                    'type' => $this->coupon->type,
+                    'value' => (float) $this->coupon->value,
+                ];
+            }),
+
+            'coupon_discount' => (float) $this->coupon_discount,
+
             'status' => $this->status,
 
             'notes' => $this->notes,

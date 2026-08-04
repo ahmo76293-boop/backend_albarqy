@@ -43,6 +43,8 @@ class StoreAdminOrderRequest extends FormRequest
             'items.*.unit_id' => 'required|exists:units,id',
 
             'items.*.quantity' => 'required|integer|min:1',
+
+            'coupon_code' => 'nullable|string|exists:coupons,code',
         ];
     }
 

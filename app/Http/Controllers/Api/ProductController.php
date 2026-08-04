@@ -7,6 +7,7 @@ use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Jobs\CompressProductImage;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Support\Facades\DB;
@@ -20,18 +21,25 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        $query = Product::with([
+            'category',
+            'images',
+            'units',
+            'productUnits.offers' => function ($query) {
+                $query->where('is_active', true)
+                    ->whereDate('start_date', '<=', now())
+                    ->whereDate('end_date', '>=', now());
+            },
+        ]);
+
+        $query->latest();
+
         if ($request->boolean('paginate', true)) {
-            $products = Product::with([
-                'category',
-                'images',
-                'units'
-            ])->latest()->paginate(10);
+            $products = $query->paginate(
+                $request->integer('per_page', 10)
+            );
         } else {
-            $products = Product::with([
-                'category',
-                'images',
-                'units'
-            ])->latest()->get();
+            $products = $query->get();
         }
 
         return ProductResource::collection($products);
@@ -216,5 +224,27 @@ class ProductController extends Controller
         return response()->json([
             'message' => __('product.deleted'),
         ]);
+    }
+
+    public function productsByCategory(Request $request, Category $category)
+    {
+        $query = $category->products()->with([
+            'category',
+            'images',
+            'productUnits.unit',
+            'productUnits.offers',
+        ]);
+
+        $query->latest();
+
+        if ($request->boolean('paginate', true)) {
+            $products = $query->paginate(
+                $request->integer('per_page', 10)
+            );
+        } else {
+            $products = $query->get();
+        }
+
+        return ProductResource::collection($products);
     }
 }

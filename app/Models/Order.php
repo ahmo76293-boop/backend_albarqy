@@ -29,6 +29,10 @@ class Order extends Model
         'status',
 
         'notes',
+
+        'coupon_discount',
+
+        'coupon_id',
     ];
 
     public function user()
@@ -44,5 +48,9 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 }

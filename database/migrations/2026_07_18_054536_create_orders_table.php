@@ -25,6 +25,14 @@ return new class extends Migration
 
             $table->decimal('discount', 12, 2)->default(0);
 
+            $table->foreignId('coupon_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+
+            $table->decimal('coupon_discount', 12, 2)
+                ->default(0);
+
             $table->decimal('total', 12, 2);
 
             $table->enum('payment_method', [
