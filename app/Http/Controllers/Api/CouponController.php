@@ -20,9 +20,16 @@ class CouponController extends Controller
     {
         $query = Coupon::query();
 
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where('code', 'like', "%{$search}%");
+        }
+
         // Filter by status
         if ($request->filled('status')) {
-            $query->where('is_active', $request->status);
+            $query->where('is_active', $request->boolean('status'));
         }
 
         // Filter by coupon type

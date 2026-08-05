@@ -23,9 +23,21 @@ class OfferController extends Controller
             'productUnit.unit',
         ]);
 
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->whereHas('productUnit.product', function ($q) use ($search) {
+                $q->where('name_en', 'like', "%{$search}%")
+                    ->orWhere('name_ar', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%")
+                    ->orWhere('unique_number', 'like', "%{$search}%");
+            });
+        }
+
         // Filter by status
         if ($request->filled('status')) {
-            $query->where('is_active', $request->status);
+            $query->where('is_active', $request->boolean('status'));
         }
 
         // Filter by offer type
@@ -33,12 +45,14 @@ class OfferController extends Controller
             $query->where('type', $request->type);
         }
 
+        // Filter by product
         if ($request->filled('product_id')) {
             $query->whereHas('productUnit', function ($q) use ($request) {
                 $q->where('product_id', $request->product_id);
             });
         }
 
+        // Filter by unit
         if ($request->filled('unit_id')) {
             $query->whereHas('productUnit', function ($q) use ($request) {
                 $q->where('unit_id', $request->unit_id);

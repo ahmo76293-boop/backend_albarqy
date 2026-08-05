@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdController;
 use App\Http\Controllers\Api\AdminLocationController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
@@ -63,6 +64,8 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::apiResource('offers', OfferController::class);
 
             Route::apiResource('coupons', CouponController::class);
+
+            Route::apiResource('ads', AdController::class);
         });
 
         // Customer only

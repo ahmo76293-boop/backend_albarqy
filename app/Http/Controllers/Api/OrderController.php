@@ -29,6 +29,19 @@ class OrderController extends Controller
             'items.unit',
         ]);
 
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($user) use ($search) {
+                        $user->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
+            });
+        }
+
         // Filter by order status
         if ($request->filled('status')) {
             $query->where('status', $request->status);

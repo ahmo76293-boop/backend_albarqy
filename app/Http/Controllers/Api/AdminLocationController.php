@@ -17,14 +17,24 @@ class AdminLocationController extends Controller
      */
     public function index(Request $request)
     {
+        $locations = Location::with('user');
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $locations->where(function ($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%");
+            });
+        }
+
+        $locations->latest();
+
         if ($request->boolean('paginate', true)) {
-            $locations = Location::with('user')
-                ->latest()
-                ->paginate(10);
+            $locations = $locations->paginate(10);
         } else {
-            $locations = Location::with('user')
-                ->latest()
-                ->get();
+            $locations = $locations->get();
         }
 
         return LocationResource::collection($locations);
