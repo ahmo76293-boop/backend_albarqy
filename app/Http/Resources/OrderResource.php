@@ -25,6 +25,21 @@ class OrderResource extends JsonResource
                 $this->whenLoaded('location')
             ),
 
+            'delivery_driver' => $this->whenLoaded(
+                'deliveryDriver',
+                function () {
+                    return $this->deliveryDriver
+                        ? [
+                            'id' => $this->deliveryDriver->id,
+                            'name' => $this->deliveryDriver->name,
+                            'email' => $this->deliveryDriver->email,
+                            'phone' => $this->deliveryDriver->phone,
+                            'role' => $this->deliveryDriver->role,
+                        ]
+                        : null;
+                }
+            ),
+
             'items' => OrderItemResource::collection(
                 $this->whenLoaded('items')
             ),

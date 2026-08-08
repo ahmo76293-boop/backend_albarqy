@@ -32,6 +32,8 @@ Route::group(['middleware' => ['api', 'locale']], function () {
     Route::apiResource('products', ProductController::class)
         ->only(['index', 'show']);
 
+    Route::apiResource('offers', OfferController::class)->only(['index', 'show']);
+
     Route::apiResource('ads', AdController::class)->only(['index']);
 
     Route::get('categories/{category}/products', [ProductController::class, 'productsByCategory']);
@@ -63,11 +65,16 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::post('orders/admin-store', [OrderController::class, 'adminStore']);
             Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
 
-            Route::apiResource('offers', OfferController::class);
+            Route::apiResource('offers', OfferController::class)->only(['store', 'update', 'destroy']);
 
             Route::apiResource('coupons', CouponController::class);
 
             Route::apiResource('ads', AdController::class)->only(['store', 'update', 'destroy', 'show']);
+
+            Route::patch(
+                'orders/{id}/delivery-driver',
+                [OrderController::class, 'assignDeliveryDriver']
+            );
         });
 
         // Customer only
@@ -98,6 +105,24 @@ Route::group(['middleware' => ['api', 'locale']], function () {
 
         // Admin + Customer Service
         Route::middleware('role:admin,customer_service')->group(function () {});
+
+        // Admin + Customer Service
+        Route::middleware('role:delivery')->group(function () {
+            Route::get(
+                '/delivery/orders',
+                [OrderController::class, 'deliveryOrders']
+            );
+
+            Route::get(
+                '/delivery/orders/{id}',
+                [OrderController::class, 'deliveryShow']
+            );
+
+            Route::patch(
+                '/delivery/orders/{id}/status',
+                [OrderController::class, 'updateDeliveryStatus']
+            );
+        });
     });
 });
 

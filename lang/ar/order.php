@@ -54,4 +54,21 @@ return [
 
     'status_required' => 'حقل حالة الطلب مطلوب.',
     'status_invalid' => 'حالة الطلب المحددة غير صالحة.',
+
+    'delivery_driver_required' => 'عامل التوصيل مطلوب.',
+    'delivery_driver_integer' => 'معرف عامل التوصيل يجب أن يكون رقمًا صحيحًا.',
+    'delivery_driver_not_found' => 'عامل التوصيل المحدد غير موجود أو غير صالح.',
+    'delivery_driver_assigned' => 'تم تعيين عامل التوصيل للطلب بنجاح.',
+    'invalid_delivery_driver' => 'عامل التوصيل المحدد غير صالح أو غير نشط.',
+    'delivery_notes_string' => 'ملاحظات التوصيل يجب أن تكون نصًا.',
+    'delivery_notes_max' => 'ملاحظات التوصيل يجب ألا تتجاوز 1000 حرف.',
+
+    'invalid_delivery_status' => 'لا يمكن إكمال التوصيل إلا للطلبات التي تم شحنها.',
+    'delivery_completed' => 'تم تسليم الطلب بنجاح.',
+    'delivery_complete_failed' => 'فشل في إكمال عملية التوصيل.',
+    'invalid_product_unit' => 'وحدة المنتج المحددة لا تنتمي إلى المنتج المحدد.',
+
+    'payment_status_required' => 'حالة الدفع مطلوبة.',
+    'invalid_payment_status' => 'حالة الدفع غير صالحة.',
+
 ];

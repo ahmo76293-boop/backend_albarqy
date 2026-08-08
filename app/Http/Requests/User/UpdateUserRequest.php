@@ -33,7 +33,7 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($this->route('user')->id),
             ],
 
-            'role' => 'required|in:admin,customer,customer_service',
+            'role' => 'in:admin,delivery,customer_service,customer',
 
             'is_active' => 'required|boolean',
         ];

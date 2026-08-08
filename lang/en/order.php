@@ -54,4 +54,21 @@ return [
 
     'status_required' => 'The order status field is required.',
     'status_invalid' => 'The selected order status is invalid.',
+
+    'delivery_driver_required' => 'The delivery driver is required.',
+    'delivery_driver_integer' => 'The delivery driver ID must be an integer.',
+    'delivery_driver_not_found' => 'The selected delivery driver does not exist or is invalid.',
+    'delivery_driver_assigned' => 'Delivery driver assigned successfully.',
+    'invalid_delivery_driver' => 'The selected delivery driver is invalid or inactive.',
+    'delivery_notes_string' => 'Delivery notes must be a string.',
+    'delivery_notes_max' => 'Delivery notes may not exceed 1000 characters.',
+
+    'invalid_delivery_status' => 'The delivery can only be completed for shipped orders.',
+    'delivery_completed' => 'Order delivered successfully.',
+    'delivery_complete_failed' => 'Failed to complete the delivery.',
+    'invalid_product_unit' => 'The selected unit does not belong to the selected product.',
+
+    'payment_status_required' => 'The payment status is required.',
+    'invalid_payment_status' => 'The payment status is invalid.',
+
 ];

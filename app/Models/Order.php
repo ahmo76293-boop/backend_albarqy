@@ -8,6 +8,8 @@ class Order extends Model
 {
     protected $fillable = [
 
+        'delivery_user_id',
+
         'user_id',
 
         'location_id',
@@ -52,5 +54,18 @@ class Order extends Model
     public function coupon()
     {
         return $this->belongsTo(Coupon::class);
+    }
+
+    public function deliveryUser()
+    {
+        return $this->belongsTo(User::class, 'delivery_user_id');
+    }
+
+    public function deliveryDriver()
+    {
+        return $this->belongsTo(
+            User::class,
+            'delivery_user_id'
+        );
     }
 }

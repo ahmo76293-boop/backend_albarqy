@@ -60,6 +60,12 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->text('notes')->nullable();
+
+            $table->foreignId('delivery_user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
             $table->timestamps();
         });
     }
