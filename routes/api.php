@@ -32,6 +32,8 @@ Route::group(['middleware' => ['api', 'locale']], function () {
     Route::apiResource('products', ProductController::class)
         ->only(['index', 'show']);
 
+    Route::apiResource('ads', AdController::class)->only(['index']);
+
     Route::get('categories/{category}/products', [ProductController::class, 'productsByCategory']);
 
     // Protected
@@ -65,7 +67,7 @@ Route::group(['middleware' => ['api', 'locale']], function () {
 
             Route::apiResource('coupons', CouponController::class);
 
-            Route::apiResource('ads', AdController::class);
+            Route::apiResource('ads', AdController::class)->only(['store', 'update', 'destroy', 'show']);
         });
 
         // Customer only
