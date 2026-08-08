@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('order_id')
                 ->constrained()
                 ->cascadeOnDelete();
@@ -25,14 +26,21 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            // quantity ordered
+            // Quantity ordered
             $table->integer('quantity');
 
-            // price of one unit at purchase time
+            // Price of one unit at purchase time
+            // Gift items will have price = 0
             $table->decimal('price', 12, 2);
 
             // quantity × price
+            // Gift items will have total = 0
             $table->decimal('total', 12, 2);
+
+            // Whether this item was added as a free gift
+            $table->boolean('is_gift')
+                ->default(false);
+
             $table->timestamps();
         });
     }

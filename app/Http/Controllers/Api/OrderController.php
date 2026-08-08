@@ -104,17 +104,24 @@ class OrderController extends Controller
 
             $itemsData = [];
 
-            // Calculate products prices
+            /*
+        |--------------------------------------------------------------------------
+        | Calculate products prices + normal offers
+        |--------------------------------------------------------------------------
+        */
+
             foreach ($request->items as $item) {
 
-                $productUnit = ProductUnit::where('product_id', $item['product_id'])
+                $productUnit = ProductUnit::with('offers')
+                    ->where('product_id', $item['product_id'])
                     ->where('unit_id', $item['unit_id'])
                     ->first();
 
                 if (!$productUnit) {
-                    throw new \Exception('The selected unit does not belong to this product.');
+                    throw new \Exception(
+                        __('order.invalid_product_unit')
+                    );
                 }
-
 
                 $priceData = $productUnit->getFinalPrice();
 
@@ -124,66 +131,199 @@ class OrderController extends Controller
 
                 $subtotal += $total;
 
-
                 $itemsData[] = [
                     'product_id' => $productUnit->product_id,
                     'unit_id' => $productUnit->unit_id,
                     'quantity' => $item['quantity'],
                     'price' => $price,
                     'total' => $total,
+                    'is_gift' => false,
                 ];
             }
 
 
-            // Apply coupon
-            $coupon = null;
-            $couponDiscount = 0;
+            /*
+        |--------------------------------------------------------------------------
+        | Apply Gift Offers
+        |--------------------------------------------------------------------------
+        */
 
+            foreach ($request->items as $item) {
+
+                $productUnit = ProductUnit::where('product_id', $item['product_id'])
+                    ->where('unit_id', $item['unit_id'])
+                    ->first();
+
+                if (!$productUnit) {
+                    continue;
+                }
+
+                $purchaseQuantity = (int) $item['quantity'];
+
+                /*
+    |--------------------------------------------------------------------------
+    | Get active gift offers for this product unit
+    |--------------------------------------------------------------------------
+    */
+
+                $giftOffers = $productUnit->offers()
+                    ->where('type', 'gift')
+                    ->where('is_active', true)
+                    ->whereDate('start_date', '<=', now())
+                    ->whereDate('end_date', '>=', now())
+                    ->get();
+
+                foreach ($giftOffers as $offer) {
+
+                    if (!$offer->buy_quantity || !$offer->gift_quantity) {
+                        continue;
+                    }
+
+                    /*
+        |--------------------------------------------------------------------------
+        | Check if customer qualifies
+        |
+        | Example:
+        | buy_quantity = 2
+        | gift_quantity = 1
+        |
+        | Buy 1  -> No gift
+        | Buy 2  -> 1 gift
+        | Buy 3  -> 1 gift
+        | Buy 5  -> 1 gift
+        |--------------------------------------------------------------------------
+        */
+
+                    if ($purchaseQuantity < $offer->buy_quantity) {
+                        continue;
+                    }
+
+                    // Give exactly the configured gift quantity
+                    $giftQuantity = $offer->gift_quantity;
+
+                    /*
+        |--------------------------------------------------------------------------
+        | Get gift product unit
+        |--------------------------------------------------------------------------
+        */
+
+                    $giftProductUnit = ProductUnit::find(
+                        $offer->gift_product_unit_id
+                    );
+
+                    if (!$giftProductUnit) {
+                        continue;
+                    }
+
+                    /*
+        |--------------------------------------------------------------------------
+        | Add gift as a free order item
+        |--------------------------------------------------------------------------
+        */
+
+                    $itemsData[] = [
+
+                        'product_id' => $giftProductUnit->product_id,
+
+                        'unit_id' => $giftProductUnit->unit_id,
+
+                        'quantity' => $giftQuantity,
+
+                        'price' => 0,
+
+                        'total' => 0,
+
+                        'is_gift' => true,
+                    ];
+                }
+            }
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | Apply Coupon
+        |--------------------------------------------------------------------------
+        */
+
+            $coupon = null;
+
+            $couponDiscount = 0;
 
             if ($request->filled('coupon_code')) {
 
-                $coupon = Coupon::where('code', strtoupper($request->coupon_code))
+                $coupon = Coupon::where(
+                    'code',
+                    strtoupper($request->coupon_code)
+                )
                     ->where('is_active', true)
                     ->whereDate('start_date', '<=', now())
                     ->whereDate('end_date', '>=', now())
                     ->first();
 
-
                 if (!$coupon) {
-                    throw new \Exception(__('coupon.invalid'));
+                    throw new \Exception(
+                        __('coupon.invalid')
+                    );
                 }
-
 
                 if (
                     $coupon->usage_limit !== null &&
                     $coupon->used_count >= $coupon->usage_limit
                 ) {
-                    throw new \Exception(__('coupon.limit_reached'));
+                    throw new \Exception(
+                        __('coupon.limit_reached')
+                    );
                 }
-
 
                 if (
                     $coupon->minimum_order_amount &&
                     $subtotal < $coupon->minimum_order_amount
                 ) {
-                    throw new \Exception(__('coupon.minimum_order'));
+                    throw new \Exception(
+                        __('coupon.minimum_order')
+                    );
                 }
-
 
                 if ($coupon->type === 'percentage') {
 
-                    $couponDiscount = ($subtotal * $coupon->value) / 100;
+                    $couponDiscount =
+                        ($subtotal * $coupon->value) / 100;
                 } else {
 
-                    $couponDiscount = $coupon->value;
+                    $couponDiscount =
+                        $coupon->value;
                 }
 
-
-                $couponDiscount = min($couponDiscount, $subtotal);
+                $couponDiscount = min(
+                    $couponDiscount,
+                    $subtotal
+                );
             }
 
 
-            // Create order
+            /*
+        |--------------------------------------------------------------------------
+        | Calculate final total
+        |--------------------------------------------------------------------------
+        */
+
+            $discount = $request->discount ?? 0;
+
+            $deliveryFee = $request->delivery_fee ?? 0;
+
+            $total =
+                $subtotal
+                - $couponDiscount
+                - $discount
+                + $deliveryFee;
+
+
+            /*
+        |--------------------------------------------------------------------------
+        | Create Order
+        |--------------------------------------------------------------------------
+        */
+
             $order = Order::create([
 
                 'user_id' => auth()->id(),
@@ -198,14 +338,11 @@ class OrderController extends Controller
 
                 'coupon_discount' => $couponDiscount,
 
-                'delivery_fee' => $request->delivery_fee ?? 0,
+                'delivery_fee' => $deliveryFee,
 
-                'discount' => $request->discount ?? 0,
+                'discount' => $discount,
 
-                'total' => $subtotal
-                    - $couponDiscount
-                    - ($request->discount ?? 0)
-                    + ($request->delivery_fee ?? 0),
+                'total' => max(0, $total),
 
                 'payment_method' => $request->payment_method,
 
@@ -217,21 +354,40 @@ class OrderController extends Controller
             ]);
 
 
-            // Create order items
+            /*
+        |--------------------------------------------------------------------------
+        | Create Order Items
+        |--------------------------------------------------------------------------
+        */
+
             foreach ($itemsData as $item) {
 
                 OrderItem::create([
+
                     'order_id' => $order->id,
+
                     'product_id' => $item['product_id'],
+
                     'unit_id' => $item['unit_id'],
+
                     'quantity' => $item['quantity'],
+
                     'price' => $item['price'],
+
                     'total' => $item['total'],
+
+                    // Only if your order_items table has this column
+                    'is_gift' => $item['is_gift'],
                 ]);
             }
 
 
-            // Increase coupon usage
+            /*
+        |--------------------------------------------------------------------------
+        | Increase Coupon Usage
+        |--------------------------------------------------------------------------
+        */
+
             if ($coupon) {
                 $coupon->increment('used_count');
             }
@@ -241,25 +397,38 @@ class OrderController extends Controller
 
 
             return response()->json([
+
                 'message' => __('order.created'),
+
                 'data' => new OrderResource(
+
                     $order->load(
+
                         'user',
+
                         'location',
+
                         'coupon',
+
                         'items.product',
+
                         'items.unit'
+
                     )
+
                 ),
+
             ], 201);
         } catch (\Throwable $e) {
 
             DB::rollBack();
 
-
             return response()->json([
+
                 'message' => __('order.create_failed'),
+
                 'error' => $e->getMessage(),
+
             ], 500);
         }
     }

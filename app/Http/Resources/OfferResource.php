@@ -12,51 +12,112 @@ class OfferResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $price = $this->productUnit->price;
-
-        $discount = $this->type === 'percentage'
-            ? ($price * $this->value / 100)
-            : $this->value;
-
-        $finalPrice = max(0, $price - $discount);
-
         return [
 
             'id' => $this->id,
 
-            'product' => [
-                'id' => $this->productUnit->product->id,
-                'name_en' => $this->productUnit->product->name_en,
-                'name_ar' => $this->productUnit->product->name_ar,
-            ],
+            'title_en' => $this->title_en,
+            'title_ar' => $this->title_ar,
 
-            'unit' => [
-                'id' => $this->productUnit->unit->id,
-                'name_en' => $this->productUnit->unit->name_en,
-                'name_ar' => $this->productUnit->unit->name_ar,
-                'quantity' => $this->productUnit->quantity,
-            ],
+            'description_en' => $this->description_en,
+            'description_ar' => $this->description_ar,
 
-            'original_price' => (float) $price,
+            'image' => $this->image
+                ? asset('storage/' . $this->image)
+                : null,
 
             'type' => $this->type,
 
-            'value' => (float) $this->value,
+            'value' => $this->type !== 'gift'
+                ? (float) $this->value
+                : null,
 
-            'discount_amount' => round($discount, 2),
+            /*
+            |--------------------------------------------------------------------------
+            | Products included in the offer
+            |--------------------------------------------------------------------------
+            */
 
-            'final_price' => round($finalPrice, 2),
+            'product_units' => $this->whenLoaded(
+                'productUnits',
+                function () {
+                    return $this->productUnits->map(function ($productUnit) {
 
-            'start_date' => $this->start_date->format('Y-m-d'),
+                        return [
+                            'id' => $productUnit->id,
 
-            'end_date' => $this->end_date->format('Y-m-d'),
+                            'product' => [
+                                'id' => $productUnit->product->id,
+                                'name_en' => $productUnit->product->name_en,
+                                'name_ar' => $productUnit->product->name_ar,
+                                'image' => $productUnit->product->images->first()?->image,
+                            ],
 
-            'is_active' => $this->is_active,
+                            'unit' => [
+                                'id' => $productUnit->unit->id,
+                                'name_en' => $productUnit->unit->name_en,
+                                'name_ar' => $productUnit->unit->name_ar,
+                                'quantity' => $productUnit->quantity,
+                            ],
 
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+                            'price' => (float) $productUnit->price,
+                        ];
+                    });
+                }
+            ),
 
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            /*
+            |--------------------------------------------------------------------------
+            | Gift information
+            |--------------------------------------------------------------------------
+            */
 
+            'buy_quantity' => $this->type === 'gift'
+                ? $this->buy_quantity
+                : null,
+
+            'gift' => $this->when(
+                $this->type === 'gift' && $this->giftProductUnit,
+                function () {
+
+                    $gift = $this->giftProductUnit;
+
+                    return [
+                        'product_unit_id' => $gift->id,
+
+                        'product' => [
+                            'id' => $gift->product->id,
+                            'name_en' => $gift->product->name_en,
+                            'name_ar' => $gift->product->name_ar,
+                        ],
+
+                        'unit' => [
+                            'id' => $gift->unit->id,
+                            'name_en' => $gift->unit->name_en,
+                            'name_ar' => $gift->unit->name_ar,
+                            'quantity' => $gift->quantity,
+                        ],
+
+                        'quantity' => $this->gift_quantity,
+                    ];
+                }
+            ),
+
+            /*
+            |--------------------------------------------------------------------------
+            | Dates
+            |--------------------------------------------------------------------------
+            */
+
+            'start_date' => $this->start_date?->format('Y-m-d'),
+
+            'end_date' => $this->end_date?->format('Y-m-d'),
+
+            'is_active' => (bool) $this->is_active,
+
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

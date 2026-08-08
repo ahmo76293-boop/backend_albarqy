@@ -24,12 +24,16 @@ class ProductController extends Controller
         $query = Product::with([
             'category',
             'images',
-            'units',
+            'productUnits.unit',
+
             'productUnits.offers' => function ($query) {
                 $query->where('is_active', true)
                     ->whereDate('start_date', '<=', now())
                     ->whereDate('end_date', '>=', now());
             },
+
+            'productUnits.offers.giftProductUnit.product',
+            'productUnits.offers.giftProductUnit.unit',
         ]);
 
         // Search
@@ -51,7 +55,10 @@ class ProductController extends Controller
 
         // Filter by status
         if ($request->filled('status')) {
-            $query->where('status', $request->boolean('status'));
+            $query->where(
+                'status',
+                $request->boolean('status')
+            );
         }
 
         $query->latest();

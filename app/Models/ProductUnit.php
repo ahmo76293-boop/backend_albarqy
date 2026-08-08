@@ -31,9 +31,11 @@ class ProductUnit extends Model
 
     public function offers()
     {
-        return $this->hasMany(
+        return $this->belongsToMany(
             Offer::class,
-            'product_unit_id'
+            'offer_product_unit',
+            'product_unit_id',
+            'offer_id'
         );
     }
 
@@ -44,7 +46,17 @@ class ProductUnit extends Model
             ->where('is_active', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
+            ->latest()
             ->first();
+    }
+
+    public function activeOffers()
+    {
+        return $this->offers()
+            ->where('is_active', true)
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->get();
     }
 
     public function getFinalPrice(): array
@@ -58,20 +70,41 @@ class ProductUnit extends Model
         if ($offer) {
 
             if ($offer->type === 'percentage') {
-                $discount = ($originalPrice * $offer->value) / 100;
+
+                $discount = ($originalPrice * (float) $offer->value) / 100;
             } elseif ($offer->type === 'fixed') {
-                $discount = $offer->value;
+
+                $discount = (float) $offer->value;
             }
 
-            if ($discount > $originalPrice) {
-                $discount = $originalPrice;
+            // Gift offers don't reduce the price
+            if ($offer->type === 'gift') {
+                $discount = 0;
             }
+
+            // Never allow discount to exceed the original price
+            $discount = min($discount, $originalPrice);
         }
 
         return [
-            'original_price' => $originalPrice,
-            'discount' => $discount,
-            'final_price' => $originalPrice - $discount,
+            'original_price' => round($originalPrice, 2),
+
+            'discount' => round($discount, 2),
+
+            'final_price' => round(
+                $originalPrice - $discount,
+                2
+            ),
+
+            'offer' => $offer,
         ];
+    }
+
+    public function giftOffers()
+    {
+        return $this->hasMany(
+            Offer::class,
+            'gift_product_unit_id'
+        );
     }
 }

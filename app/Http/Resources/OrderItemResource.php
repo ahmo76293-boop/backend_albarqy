@@ -28,6 +28,8 @@ class OrderItemResource extends JsonResource
             'price' => (float) $this->price,
 
             'total' => (float) $this->total,
+
+            'is_gift' => (bool) $this->is_gift,
         ];
     }
 }

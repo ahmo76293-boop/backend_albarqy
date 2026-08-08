@@ -7,18 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class OrderItem extends Model
 {
     protected $fillable = [
-
         'order_id',
-
         'product_id',
-
         'unit_id',
-
         'quantity',
-
         'price',
-
         'total',
+        'is_gift',
+    ];
+
+    protected $casts = [
+        'price' => 'float',
+        'total' => 'float',
+        'is_gift' => 'boolean',
     ];
 
     public function order()
