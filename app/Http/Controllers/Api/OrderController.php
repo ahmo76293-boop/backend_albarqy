@@ -448,6 +448,7 @@ class OrderController extends Controller
             'user',
             'location',
             'items.product',
+            'deliveryDriver',
             'items.unit'
         ])->findOrFail($id);
 

@@ -43,6 +43,23 @@ class OfferResource extends JsonResource
                 function () {
                     return $this->productUnits->map(function ($productUnit) {
 
+                        $oldPrice = (float) $productUnit->price;
+                        $price = $oldPrice;
+
+                        // For fixed/percentage offers
+                        if ($this->type === 'percentage') {
+
+                            $discount = ($oldPrice * (float) $this->value) / 100;
+
+                            $price = max(0, $oldPrice - $discount);
+                        } elseif ($this->type === 'fixed') {
+
+                            $price = max(
+                                0,
+                                $oldPrice - (float) $this->value
+                            );
+                        }
+
                         return [
                             'id' => $productUnit->id,
 
@@ -60,7 +77,9 @@ class OfferResource extends JsonResource
                                 'quantity' => $productUnit->quantity,
                             ],
 
-                            'price' => (float) $productUnit->price,
+                            'old_price' => $oldPrice,
+
+                            'price' => $price,
                         ];
                     });
                 }
