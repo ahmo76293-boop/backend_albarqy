@@ -153,7 +153,16 @@ class ProductController extends Controller
         $product->load([
             'category',
             'images',
-            'units'
+            'productUnits.unit',
+
+            'productUnits.offers' => function ($query) {
+                $query->where('is_active', true)
+                    ->whereDate('start_date', '<=', now())
+                    ->whereDate('end_date', '>=', now());
+            },
+
+            'productUnits.offers.giftProductUnit.product',
+            'productUnits.offers.giftProductUnit.unit',
         ]);
 
         return new ProductResource($product);
