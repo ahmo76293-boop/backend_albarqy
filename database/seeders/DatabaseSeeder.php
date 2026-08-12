@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
             'role' => 'admin',
             'is_active' => 1,
+            'phone' => '1234567890',
         ]);
 
         $this->call([
