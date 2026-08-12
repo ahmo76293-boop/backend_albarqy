@@ -70,5 +70,8 @@ return [
 
     'payment_status_required' => 'حالة الدفع مطلوبة.',
     'invalid_payment_status' => 'حالة الدفع غير صالحة.',
-
+    'cannot_claim_delivery_order' => 'لا يمكن استلام هذا الطلب للتوصيل في حالته الحالية.',
+    'order_already_assigned' => 'تم تعيين عامل توصيل لهذا الطلب بالفعل.',
+    'delivery_order_claimed' => 'تم استلام الطلب للتوصيل بنجاح.',
+    'cannot_assign_delivery_driver' => 'لا يمكن تعيين عامل توصيل لهذا الطلب في حالته الحالية.',
 ];

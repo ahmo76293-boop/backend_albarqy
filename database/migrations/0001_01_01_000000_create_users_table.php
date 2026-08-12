@@ -21,6 +21,7 @@ return new class extends Migration
                 ->default('customer');
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
+            $table->string('phone');
             $table->timestamps();
         });
 

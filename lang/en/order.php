@@ -70,5 +70,8 @@ return [
 
     'payment_status_required' => 'The payment status is required.',
     'invalid_payment_status' => 'The payment status is invalid.',
-
+    'cannot_claim_delivery_order' => 'This order cannot be claimed for delivery in its current status.',
+    'order_already_assigned' => 'This order has already been assigned to a delivery driver.',
+    'delivery_order_claimed' => 'The order has been successfully claimed for delivery.',
+    'cannot_assign_delivery_driver' => 'A delivery driver cannot be assigned to this order in its current status.',
 ];

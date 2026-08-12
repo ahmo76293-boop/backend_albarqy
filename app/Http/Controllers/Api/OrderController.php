@@ -1057,4 +1057,109 @@ class OrderController extends Controller
 
         return new OrderResource($order);
     }
+
+    public function availableDeliveryOrders(Request $request)
+    {
+        $query = Order::with([
+            'user',
+            'location',
+            'items.product',
+            'items.unit',
+            'coupon',
+        ])
+            ->whereNull('delivery_user_id')
+            ->whereIn('status', [
+                'confirmed',
+                'processing',
+                'shipped',
+            ])
+            ->latest();
+
+        if ($request->boolean('paginate', true)) {
+            $orders = $query->paginate(
+                $request->integer('per_page', 10)
+            );
+        } else {
+            $orders = $query->get();
+        }
+
+        return OrderResource::collection($orders);
+    }
+
+    public function claimDeliveryOrder($id)
+    {
+        $order = Order::findOrFail($id);
+
+        /*
+    |--------------------------------------------------------------------------
+    | Check current user
+    |--------------------------------------------------------------------------
+    */
+
+        $driver = auth()->user();
+
+        if (
+            $driver->role !== 'delivery' ||
+            !$driver->is_active
+        ) {
+            return response()->json([
+                'message' => __('order.invalid_delivery_driver'),
+            ], 403);
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Check order status
+    |--------------------------------------------------------------------------
+    */
+
+        if ($order->status !== 'shipped') {
+            return response()->json([
+                'message' => __('order.cannot_claim_delivery_order'),
+            ], 422);
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Check if order already has a driver
+    |--------------------------------------------------------------------------
+    */
+
+        if ($order->delivery_user_id !== null) {
+            return response()->json([
+                'message' => __('order.order_already_assigned'),
+            ], 422);
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Assign order to current delivery driver
+    |--------------------------------------------------------------------------
+    */
+
+        $order->update([
+            'delivery_user_id' => $driver->id,
+        ]);
+
+        /*
+    |--------------------------------------------------------------------------
+    | Return order
+    |--------------------------------------------------------------------------
+    */
+
+        return response()->json([
+            'message' => __('order.delivery_order_claimed'),
+
+            'data' => new OrderResource(
+                $order->fresh()->load([
+                    'user',
+                    'location',
+                    'deliveryDriver',
+                    'items.product',
+                    'items.unit',
+                    'coupon',
+                ])
+            ),
+        ]);
+    }
 }

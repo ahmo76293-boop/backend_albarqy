@@ -122,6 +122,16 @@ Route::group(['middleware' => ['api', 'locale']], function () {
                 '/delivery/orders/{id}/status',
                 [OrderController::class, 'updateDeliveryStatus']
             );
+
+            Route::get(
+                '/delivery/available-orders',
+                [OrderController::class, 'availableDeliveryOrders']
+            );
+
+            Route::patch(
+                '/delivery/orders/{id}/claim',
+                [OrderController::class, 'claimDeliveryOrder']
+            );
         });
     });
 });
