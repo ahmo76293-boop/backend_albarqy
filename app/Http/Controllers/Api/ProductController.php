@@ -13,6 +13,7 @@ use App\Models\ProductImage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class ProductController extends Controller
 {
@@ -35,6 +36,23 @@ class ProductController extends Controller
             'productUnits.offers.giftProductUnit.product',
             'productUnits.offers.giftProductUnit.unit',
         ]);
+
+        /*
+    |--------------------------------------------------------------------------
+    | Sales in the last 2 days
+    |--------------------------------------------------------------------------
+    */
+
+        $from = now()->subDays(2);
+
+        $query->withSum([
+            'orderItems as sold_quantity_last_2_days' => function ($query) use ($from) {
+                $query->whereHas('order', function ($q) use ($from) {
+                    $q->where('created_at', '>=', $from)
+                        ->whereNotIn('status', ['cancelled']);
+                });
+            }
+        ], 'quantity');
 
         // Search
         if ($request->filled('search')) {

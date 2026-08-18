@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -63,6 +64,20 @@ class ProductResource extends JsonResource
                                 'quantity' => $productUnit->quantity,
 
                                 'price' => (float) $productUnit->price,
+
+                                'sold_quantity_last_2_days' => OrderItem::where(
+                                    'product_id',
+                                    $productUnit->product_id
+                                )
+                                    ->where(
+                                        'unit_id',
+                                        $productUnit->unit_id
+                                    )
+                                    ->whereHas('order', function ($query) {
+                                        $query->where('created_at', '>=', now()->subDays(2))
+                                            ->whereNotIn('status', ['cancelled']);
+                                    })
+                                    ->sum('quantity'),
 
                             ];
 
