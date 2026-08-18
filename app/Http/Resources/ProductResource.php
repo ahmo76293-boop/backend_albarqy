@@ -79,6 +79,21 @@ class ProductResource extends JsonResource
                                     })
                                     ->sum('quantity'),
 
+                                'buyers_count_last_2_days' => OrderItem::where(
+                                    'product_id',
+                                    $productUnit->product_id
+                                )
+                                    ->where('unit_id', $productUnit->unit_id)
+                                    ->whereHas('order', function ($query) {
+                                        $query->where('created_at', '>=', now()->subDays(2))
+                                            ->whereNotIn('status', ['cancelled']);
+                                    })
+                                    ->with('order:id,user_id')
+                                    ->get()
+                                    ->pluck('order.user_id')
+                                    ->unique()
+                                    ->count(),
+
                             ];
 
                             /*
