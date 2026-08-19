@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\OfferController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\UnitController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -74,6 +75,49 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::patch(
                 'orders/{id}/delivery-driver',
                 [OrderController::class, 'assignDeliveryDriver']
+            );
+
+            //-------------------------reports----------------------------------------------------
+            // Sales
+            Route::get(
+                '/reports/sales',
+                [ReportController::class, 'sales']
+            );
+
+            // Customers
+            Route::get(
+                '/reports/customers',
+                [ReportController::class, 'customers']
+            );
+
+            // Products
+            Route::get(
+                '/reports/products',
+                [ReportController::class, 'products']
+            );
+
+            // Orders
+            Route::get(
+                '/reports/orders',
+                [ReportController::class, 'orders']
+            );
+
+            // Delivery drivers
+            Route::get(
+                '/reports/delivery-drivers',
+                [ReportController::class, 'deliveryDrivers']
+            );
+
+            // Specific delivery driver
+            Route::get(
+                '/reports/delivery-drivers/{id}',
+                [ReportController::class, 'deliveryDriver']
+            );
+
+            // Locations
+            Route::get(
+                '/reports/locations',
+                [ReportController::class, 'locations']
             );
         });
 
