@@ -21,4 +21,4 @@ RUN php artisan storage:link
 
 EXPOSE 10000
 
-CMD php artisan migrate:fresh --seed --force && php artisan config:clear && php artisan cache:clear && php artisan route:cache && php artisan view:cache && php artisan config:cache && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+CMD php artisan migrate --force && php artisan config:clear && php artisan cache:clear && php artisan route:cache && php artisan view:cache && php artisan config:cache && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
