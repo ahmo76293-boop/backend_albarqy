@@ -74,4 +74,7 @@ return [
     'order_already_assigned' => 'This order has already been assigned to a delivery driver.',
     'delivery_order_claimed' => 'The order has been successfully claimed for delivery.',
     'cannot_assign_delivery_driver' => 'A delivery driver cannot be assigned to this order in its current status.',
+
+    'delivery_fee_updated' => 'Delivery fee updated successfully.',
+    'delivery_fee_required' => 'Delivery fee is required.',
 ];

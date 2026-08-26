@@ -74,4 +74,7 @@ return [
     'order_already_assigned' => 'تم تعيين عامل توصيل لهذا الطلب بالفعل.',
     'delivery_order_claimed' => 'تم استلام الطلب للتوصيل بنجاح.',
     'cannot_assign_delivery_driver' => 'لا يمكن تعيين عامل توصيل لهذا الطلب في حالته الحالية.',
+
+    'delivery_fee_updated' => 'تم تحديث رسوم التوصيل بنجاح.',
+    'delivery_fee_required' => 'رسوم التوصيل مطلوبة.',
 ];

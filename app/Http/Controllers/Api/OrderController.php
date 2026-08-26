@@ -10,6 +10,7 @@ use App\Http\Requests\Order\StoreOrderRequest;
 use App\Http\Requests\Order\UpdateDeliveryOrderStatusRequest;
 use App\Http\Requests\Order\UpdateOrderRequest;
 use App\Http\Requests\Order\UpdateOrderStatusRequest;
+use App\Http\Requests\UpdateOrderDeliveryFeeRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Coupon;
 use App\Models\Order;
@@ -535,6 +536,57 @@ class OrderController extends Controller
                         'items.product',
                         'items.unit'
                     )
+                ),
+            ]);
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'message' => __('order.update_failed'),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updateDeliveryFee(
+        UpdateOrderDeliveryFeeRequest $request,
+        $id
+    ) {
+        DB::beginTransaction();
+
+        try {
+
+            $order = Order::findOrFail($id);
+
+            $deliveryFee = (float) $request->delivery_fee;
+
+            // Recalculate total
+            $total =
+                $order->subtotal
+                - $order->coupon_discount
+                - $order->discount
+                + $deliveryFee;
+
+            $order->update([
+                'delivery_fee' => $deliveryFee,
+                'total' => max(0, $total),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => __('order.delivery_fee_updated'),
+
+                'data' => new OrderResource(
+                    $order->fresh()->load([
+                        'user',
+                        'location',
+                        'deliveryDriver',
+                        'coupon',
+                        'items.product',
+                        'items.unit',
+                    ])
                 ),
             ]);
         } catch (\Throwable $e) {
