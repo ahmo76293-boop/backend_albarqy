@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\Api\AdController;
 use App\Http\Controllers\Api\AdminLocationController;
 use App\Http\Controllers\Api\CartController;
@@ -15,6 +16,9 @@ use App\Http\Controllers\Api\UnitController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactInfoController;
+use App\Http\Controllers\FaqController;
+use App\Http\Controllers\PrivacyPolicyController;
 
 Route::group(['middleware' => ['api', 'locale']], function () {
     // Public
@@ -119,6 +123,26 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::get(
                 '/reports/locations',
                 [ReportController::class, 'locations']
+            );
+
+            Route::apiResource(
+                'about-us',
+                AboutUsController::class
+            );
+
+            Route::apiResource(
+                'contact-infos',
+                ContactInfoController::class
+            );
+
+            Route::apiResource(
+                'faqs',
+                FaqController::class
+            );
+
+            Route::apiResource(
+                'privacy-policies',
+                PrivacyPolicyController::class
             );
         });
 
