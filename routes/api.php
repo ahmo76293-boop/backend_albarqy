@@ -19,6 +19,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactInfoController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\PrivacyPolicyController;
+use App\Http\Controllers\ProductImportController;
 
 Route::group(['middleware' => ['api', 'locale']], function () {
     // Public
@@ -143,6 +144,11 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::apiResource(
                 'privacy-policies',
                 PrivacyPolicyController::class
+            );
+
+            Route::post(
+                'products/import',
+                [ProductImportController::class, 'import']
             );
         });
 

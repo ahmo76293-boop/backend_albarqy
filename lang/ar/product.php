@@ -37,4 +37,10 @@ return [
     'quantity_required' => 'الكمية مطلوبة.',
     'quantity_integer' => 'يجب أن تكون الكمية رقماً صحيحاً.',
     'quantity_min' => 'يجب أن تكون الكمية أكبر من أو تساوي 1.',
+
+    'unit_barcode_required' => 'باركود الوحدة مطلوب.',
+    'unit_barcode_unique' => 'باركود الوحدة مستخدم بالفعل.',
+
+    'imported' => 'تم استيراد المنتجات بنجاح.',
+    'import_failed' => 'فشل استيراد المنتجات.',
 ];

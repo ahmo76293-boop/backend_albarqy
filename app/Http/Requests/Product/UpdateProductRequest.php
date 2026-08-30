@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Product;
 
+use App\Models\ProductUnit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -36,13 +37,6 @@ class UpdateProductRequest extends FormRequest
                 Rule::unique('products', 'unique_number')->ignore($this->product),
             ],
 
-            'barcode' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('products', 'barcode')->ignore($this->product),
-            ],
-
             'description_en' => 'nullable|string',
             'description_ar' => 'nullable|string',
 
@@ -59,6 +53,11 @@ class UpdateProductRequest extends FormRequest
 
             'units.*.unit_id' => 'required|exists:units,id',
             'units.*.quantity' => 'required|integer|min:1',
+            'units.*.barcode' => [
+                'required',
+                'string',
+                'max:255',
+            ],
         ];
     }
 
@@ -76,10 +75,6 @@ class UpdateProductRequest extends FormRequest
             // Product Number
             'unique_number.required' => __('product.unique_number_required'),
             'unique_number.unique' => __('product.unique_number_unique'),
-
-            // Barcode
-            'barcode.required' => __('product.barcode_required'),
-            'barcode.unique' => __('product.barcode_unique'),
 
             // Category
             'category_id.required' => __('product.category_required'),
@@ -103,5 +98,54 @@ class UpdateProductRequest extends FormRequest
             'units.*.quantity.integer' => __('product.quantity_integer'),
             'units.*.quantity.min' => __('product.quantity_min'),
         ];
+    }
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+
+            $product = $this->product;
+
+            foreach ($this->units ?? [] as $index => $unit) {
+
+                if (empty($unit['barcode']) || empty($unit['unit_id'])) {
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Check barcode
+                |--------------------------------------------------------------------------
+                |
+                | Barcode must be unique.
+                |
+                | But the current product_unit is allowed to keep
+                | its existing barcode.
+                |
+                */
+
+                $exists = ProductUnit::where(
+                    'barcode',
+                    $unit['barcode']
+                )
+                    ->where(function ($query) use ($product, $unit) {
+
+                        $query->where('product_id', '!=', $product->id)
+                            ->orWhere(
+                                'unit_id',
+                                '!=',
+                                $unit['unit_id']
+                            );
+                    })
+                    ->exists();
+
+                if ($exists) {
+
+                    $validator->errors()->add(
+                        "units.$index.barcode",
+                        __('product.unit_barcode_unique')
+                    );
+                }
+            }
+        });
     }
 }

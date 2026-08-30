@@ -14,6 +14,7 @@
         "intervention/image-laravel": "^4.0",
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
+        "maatwebsite/excel": "^4.0",
         "resend/resend-laravel": "^1.4",
         "tymon/jwt-auth": "^2.3"
     },

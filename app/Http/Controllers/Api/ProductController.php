@@ -108,7 +108,6 @@ class ProductController extends Controller
                 'name_ar' => $request->name_ar,
 
                 'unique_number' => $request->unique_number,
-                'barcode' => $request->barcode,
 
                 'description_en' => $request->description_en,
                 'description_ar' => $request->description_ar,
@@ -139,6 +138,7 @@ class ProductController extends Controller
 
                 $units[$unit['unit_id']] = [
                     'quantity' => $unit['quantity'],
+                    'barcode' => $unit['barcode'],
                     'price' => $unit['price'],
                 ];
             }
@@ -149,8 +149,15 @@ class ProductController extends Controller
 
             return response()->json([
                 'message' => __('product.created'),
+
                 'data' => new ProductResource(
-                    $product->load('category', 'images', 'units')
+                    $product->load([
+                        'category',
+                        'images',
+                        'productUnits.unit',
+                        'productUnits.offers.giftProductUnit.product',
+                        'productUnits.offers.giftProductUnit.unit',
+                    ])
                 ),
             ], 201);
         } catch (\Exception $e) {
@@ -227,7 +234,6 @@ class ProductController extends Controller
                 'name_ar' => $request->name_ar,
 
                 'unique_number' => $request->unique_number,
-                'barcode' => $request->barcode,
 
                 'description_en' => $request->description_en,
                 'description_ar' => $request->description_ar,
@@ -241,6 +247,7 @@ class ProductController extends Controller
 
                 $units[$unit['unit_id']] = [
                     'quantity' => $unit['quantity'],
+                    'barcode' => $unit['barcode'],
                     'price' => $unit['price'],
                 ];
             }
@@ -251,8 +258,15 @@ class ProductController extends Controller
 
             return response()->json([
                 'message' => __('product.updated'),
+
                 'data' => new ProductResource(
-                    $product->fresh()->load('category', 'images', 'units')
+                    $product->fresh()->load([
+                        'category',
+                        'images',
+                        'productUnits.unit',
+                        'productUnits.offers.giftProductUnit.product',
+                        'productUnits.offers.giftProductUnit.unit',
+                    ])
                 ),
             ]);
         } catch (\Exception $e) {

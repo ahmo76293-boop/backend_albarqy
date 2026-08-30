@@ -22,8 +22,6 @@ return new class extends Migration
 
             $table->string('unique_number')->unique();
 
-            $table->string('barcode')->unique();
-
             $table->text('description_en')->nullable();
             $table->text('description_ar')->nullable();
 

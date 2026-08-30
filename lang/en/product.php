@@ -37,4 +37,10 @@ return [
     'quantity_required' => 'The quantity is required.',
     'quantity_integer' => 'The quantity must be an integer.',
     'quantity_min' => 'The quantity must be at least 1.',
+
+    'unit_barcode_required' => 'The unit barcode is required.',
+    'unit_barcode_unique' => 'The unit barcode has already been taken.',
+
+    'imported' => 'Products imported successfully.',
+    'import_failed' => 'Failed to import products.',
 ];

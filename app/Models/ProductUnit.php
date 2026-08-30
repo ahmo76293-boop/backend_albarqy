@@ -14,6 +14,7 @@ class ProductUnit extends Model
         'unit_id',
         'quantity',
         'price',
+        'barcode'
     ];
 
 

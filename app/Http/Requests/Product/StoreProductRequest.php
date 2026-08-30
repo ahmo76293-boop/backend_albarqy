@@ -18,7 +18,6 @@ class StoreProductRequest extends FormRequest
             'name_ar' => 'required|string|max:255|unique:products,name_ar',
 
             'unique_number' => 'required|string|max:255|unique:products,unique_number',
-            'barcode' => 'required|string|max:255|unique:products,barcode',
 
             'description_en' => 'nullable|string',
             'description_ar' => 'nullable|string',
@@ -36,6 +35,7 @@ class StoreProductRequest extends FormRequest
 
             'units.*.unit_id' => 'required|exists:units,id',
             'units.*.quantity' => 'required|integer|min:1',
+            'units.*.barcode' => 'required|string|max:255|unique:product_unit,barcode',
         ];
     }
 
@@ -53,10 +53,6 @@ class StoreProductRequest extends FormRequest
             // Product Number
             'unique_number.required' => __('product.unique_number_required'),
             'unique_number.unique' => __('product.unique_number_unique'),
-
-            // Barcode
-            'barcode.required' => __('product.barcode_required'),
-            'barcode.unique' => __('product.barcode_unique'),
 
             // Category
             'category_id.required' => __('product.category_required'),
@@ -79,6 +75,8 @@ class StoreProductRequest extends FormRequest
             'units.*.quantity.required' => __('product.quantity_required'),
             'units.*.quantity.integer' => __('product.quantity_integer'),
             'units.*.quantity.min' => __('product.quantity_min'),
+            'units.*.barcode.required' => __('product.unit_barcode_required'),
+            'units.*.barcode.unique' => __('product.unit_barcode_unique'),
         ];
     }
 }

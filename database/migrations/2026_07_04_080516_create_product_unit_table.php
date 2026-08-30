@@ -23,6 +23,8 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->unsignedInteger('quantity');
+            $table->string('barcode')
+                ->unique();
 
             $table->decimal('price');
 

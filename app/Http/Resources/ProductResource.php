@@ -63,6 +63,8 @@ class ProductResource extends JsonResource
 
                                 'quantity' => $productUnit->quantity,
 
+                                'barcode' => $productUnit->barcode,
+
                                 'price' => (float) $productUnit->price,
 
                                 'sold_quantity_last_2_days' => OrderItem::where(
