@@ -10,10 +10,9 @@ use App\Jobs\CompressProductImage;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 
 class ProductController extends Controller
 {
@@ -51,7 +50,7 @@ class ProductController extends Controller
                     $q->where('created_at', '>=', $from)
                         ->whereNotIn('status', ['cancelled']);
                 });
-            }
+            },
         ], 'quantity');
 
         // Search
@@ -61,7 +60,6 @@ class ProductController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name_en', 'like', "%{$search}%")
                     ->orWhere('name_ar', 'like', "%{$search}%")
-                    ->orWhere('barcode', 'like', "%{$search}%")
                     ->orWhere('unique_number', 'like', "%{$search}%");
             });
         }

@@ -14,12 +14,12 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\UnitController;
 use App\Http\Controllers\Api\UserController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactInfoController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProductImportController;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['api', 'locale']], function () {
     // Public
@@ -42,6 +42,26 @@ Route::group(['middleware' => ['api', 'locale']], function () {
 
     Route::apiResource('ads', AdController::class)->only(['index']);
 
+    Route::apiResource(
+        'about-us',
+        AboutUsController::class
+    )->only(['index']);
+
+    Route::apiResource(
+        'contact-infos',
+        ContactInfoController::class
+    )->only(['index']);
+
+    Route::apiResource(
+        'faqs',
+        FaqController::class
+    )->only(['index']);
+
+    Route::apiResource(
+        'privacy-policies',
+        PrivacyPolicyController::class
+    )->only(['index']);
+
     Route::get('categories/{category}/products', [ProductController::class, 'productsByCategory']);
 
     // Protected
@@ -49,8 +69,6 @@ Route::group(['middleware' => ['api', 'locale']], function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::post('me', [AuthController::class, 'me']);
-
-
 
         // Admin only
         Route::middleware('role:admin')->group(function () {
@@ -83,7 +101,7 @@ Route::group(['middleware' => ['api', 'locale']], function () {
                 [OrderController::class, 'assignDeliveryDriver']
             );
 
-            //-------------------------reports----------------------------------------------------
+            // -------------------------reports----------------------------------------------------
             // Sales
             Route::get(
                 '/reports/sales',
@@ -129,22 +147,22 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             Route::apiResource(
                 'about-us',
                 AboutUsController::class
-            );
+            )->only(['store', 'update', 'destroy', 'show']);
 
             Route::apiResource(
                 'contact-infos',
                 ContactInfoController::class
-            );
+            )->only(['store', 'update', 'destroy', 'show']);
 
             Route::apiResource(
                 'faqs',
                 FaqController::class
-            );
+            )->only(['store', 'update', 'destroy', 'show']);
 
             Route::apiResource(
                 'privacy-policies',
                 PrivacyPolicyController::class
-            );
+            )->only(['store', 'update', 'destroy', 'show']);
 
             Route::post(
                 'products/import',
