@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactInfoController;
 use App\Http\Controllers\FaqController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProductImportController;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +70,31 @@ Route::group(['middleware' => ['api', 'locale']], function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::post('me', [AuthController::class, 'me']);
+
+        Route::get(
+            'notifications',
+            [NotificationController::class, 'index']
+        );
+
+        Route::get(
+            'notifications/{id}',
+            [NotificationController::class, 'show']
+        );
+
+        Route::patch(
+            'notifications/{id}/read',
+            [NotificationController::class, 'markAsRead']
+        );
+
+        Route::patch(
+            'notifications/read-all',
+            [NotificationController::class, 'markAllAsRead']
+        );
+
+        Route::delete(
+            'notifications/{id}',
+            [NotificationController::class, 'destroy']
+        );
 
         // Admin only
         Route::middleware('role:admin')->group(function () {
@@ -168,6 +194,12 @@ Route::group(['middleware' => ['api', 'locale']], function () {
                 'products/import',
                 [ProductImportController::class, 'import']
             );
+
+            Route::post(
+                'notifications',
+                [NotificationController::class, 'store']
+            );
+            Route::delete('admin/notifications/{id}', [NotificationController::class, 'adminDestroy']);
         });
 
         // Customer only
