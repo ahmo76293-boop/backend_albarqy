@@ -41,5 +41,4 @@ CMD php artisan migrate --force && \
     php artisan route:cache && \
     php artisan view:cache && \
     php artisan config:cache && \
-    php artisan integration:create-token "Company A" && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
