@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\IntegrationApiToken;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'locale' => SetLocale::class,
+            'integration.token' => IntegrationApiToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

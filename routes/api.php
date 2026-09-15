@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactInfoController;
 use App\Http\Controllers\FaqController;
+use App\Http\Controllers\IntegrationProductController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProductImportController;
@@ -259,6 +260,16 @@ Route::group(['middleware' => ['api', 'locale']], function () {
             );
         });
     });
+
+    Route::middleware('integration.token')
+        ->prefix('integration')
+        ->group(function () {
+
+            Route::post(
+                'products',
+                [IntegrationProductController::class, 'store']
+            );
+        });
 });
 
 Route::get('/verify-email/{id}', [AuthController::class, 'verify'])->name('verify.email');
